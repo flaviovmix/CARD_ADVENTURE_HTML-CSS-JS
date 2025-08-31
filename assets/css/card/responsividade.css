@@ -1,0 +1,46 @@
+@media (max-width: 2560px) {
+    .container-xl {
+      width: 90%;
+      max-width: 1800px;
+    }
+}
+
+@media (max-width: 1920px) {
+    .container-xl {
+        width: 90%;
+        max-width: 1800px;
+    }
+}
+
+@media (max-width: 1440px) {
+    .container-xl {
+        width: 90%;
+        
+    }
+}
+
+@media (max-width: 1024px) {
+    .container-xl {
+        width: 90%;
+        
+    }
+}
+
+@media (max-width: 768px) {
+    .container-xl {
+        width: 95%;
+        
+    }
+}
+
+@media (max-width: 480px) {
+    .container-xl {
+        width: 100%;
+        
+    }
+
+    .card {
+        width: 90%;
+        height: 70vh;
+    }
+}

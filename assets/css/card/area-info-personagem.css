@@ -1,0 +1,114 @@
+.container-xl .card .conteudo-card .area-info-personagem {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.41);
+    box-shadow: 0px 0px 10px #22222253;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 5px 5px 0 0 ;
+    transition: right 0.3s ease;
+    right: -100%;
+    z-index: 2;
+}
+
+.container-xl .card .conteudo-card .area-info-personagem .cabecalho {
+    display: flex;
+    justify-content: space-between;
+}
+.container-xl .card .conteudo-card .area-info-personagem .cabecalho .are-face {
+    width: 120px;
+    height: 120px;
+    margin-bottom: -70px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1px solid rgb(94, 94, 94);
+    box-shadow: 3px 3px 5px #00000063;
+    background-color: rgb(216, 216, 216);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+/* imagem */
+.container-xl .card .conteudo-card .area-info-personagem .cabecalho .are-face .face {
+    height: 230%;
+    object-fit: cover;
+}
+
+.container-xl .card .conteudo-card .area-info-personagem .cabecalho .bandeira {
+    position: absolute;
+    width: 20%;
+    left: 110px;
+    top: 60px;
+    z-index: -1;
+}
+
+.container-xl .card .conteudo-card .area-info-personagem .cabecalho .classificacao {
+    display: flex;
+}
+
+.container-xl .card .conteudo-card .area-info-personagem .classificacao a {
+    height: 30px;
+    width: 30px;
+    margin: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container-xl .card .conteudo-card .area-info-personagem .classificacao img {
+    height: 30px;
+    margin: 0 5px;
+}
+
+.container-xl .card .conteudo-card .area-info-personagem.mostrar {
+    right: 0;
+}
+
+.container-xl .card .conteudo-card .area-info-personagem .tabela {
+    display: flex;
+    flex-direction: column;
+    align-items: center;      /* Centraliza verticalmente */
+    justify-content: center;  /* Centraliza horizontalmente (opcional) */
+    height: 100%;
+}
+
+.container-xl .card .conteudo-card .area-info-personagem table {
+    width: 100%;
+    padding: 10px;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: .8rem;
+    margin-top: -20px;
+    border: 1px solid rgb(137, 137, 137);
+    border-radius: 10px;
+    background-color: rgba(72, 72, 72, 0.1);
+    z-index: -1;
+}
+
+.container-xl .card .conteudo-card .area-info-personagem table td {
+    width: 50%;
+}
+.container-xl .card .conteudo-card .area-info-personagem table .chave {
+    text-align: right;
+}
+.container-xl .card .conteudo-card .area-info-personagem table .obs {
+    text-align: center;
+    border-bottom: 1px solid #ffffff63;
+    padding: 20px 30px;
+}
+.container-xl .card .conteudo-card .area-info-personagem table {
+    border-top: 1px solid #ffffff63;
+}
+.container-xl .card .conteudo-card .area-info-personagem table td {
+    padding: 8px 5px;
+    border-top: 1px solid #ffffff63;
+}
+
+.container-xl .card .conteudo-card .area-info-personagem .rodape {
+    margin-bottom: 30px;
+}

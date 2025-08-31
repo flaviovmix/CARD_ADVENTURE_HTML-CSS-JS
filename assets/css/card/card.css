@@ -1,0 +1,256 @@
+.container-xl {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    width: 95%;
+    margin: auto;
+    margin-top: 30px;
+}
+  
+.container-xl .card {
+    position: relative;
+    padding: 3px;
+    width: 350px;
+    aspect-ratio: 3.5/6;
+    border-radius: 5px;
+    transition: transform .5s ease;
+    box-shadow: 0px 0px 2px #22222253;
+}
+
+.card:hover {
+    transform: scale(1.065);
+    z-index: 1;
+  }
+
+.card-selecionado {
+    zoom: 100%;
+}
+
+.menu-lateral-card {
+    position: absolute;
+    display: flex;
+    margin: 4px 0 0 8px;
+    left: 40px;
+    width: 40px;
+    height: 82%;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: rgb(241, 241, 241);
+    border-radius: 5px;
+    border: 1px solid rgb(145, 145, 145);
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.19);
+    opacity: 0;
+    transition:
+        left 0.3s ease, 
+        opacity 0.3s ease, 
+        box-shadow 0.3s ease;
+    z-index: 10;
+}
+
+.menu-lateral-card.mover-card {
+    left: 0px;
+    opacity: 1;
+    z-index: 5;
+}
+
+.area-icones-thumb {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 15px;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.controle-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.area-icones-thumb img {
+    width: 20px;
+}
+.controle-card img {
+    width: 18px;
+}
+
+.controle-card .lixeira {
+    margin-bottom: 8px;
+}
+
+.container-xl .card .menu-bolinha {
+    position: absolute;
+    right: 5%;
+    top: 55px;
+    z-index: 3;
+}
+
+.container-xl .card .menu-bolinha svg {
+    box-sizing: content-box;
+    width: 35px;
+    height: 35px;
+    fill: white;
+    cursor: pointer;
+    filter: drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.4));
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 10%;
+    padding: 5px;
+}
+
+.container-xl .card .conteudo-card {
+    border: 1px solid rgb(179, 179, 179);
+    position: relative;
+    height: 90%;
+    border-radius: 5px 5px 0 0 ;
+    overflow: hidden;
+}
+
+.container-xl .card .conteudo-card .img-principal {
+    position: relative;
+    object-fit: cover;
+    object-position: center;
+    padding: 2px;
+    border-radius: 5px 5px 0 0;
+    height: 100%;
+    width: 100%;
+    transition: filter .7s ease, transform .7s ease;
+    filter: blur(0px) grayscale(0%);
+    transform: scale(1.0) translateY(0px) rotateZ(0deg); 
+    z-index: 0;
+}
+
+.container-xl .card .conteudo-card .img-principal.mostrar {
+    filter: blur(7px) grayscale(0%);
+    transform: scale(1.4) translateY(20px) rotateZ(-10deg); 
+}
+
+.container-xl .card .conteudo-card .area-titulo-da-fase {
+    position: relative; /* de relative para absolute */
+    bottom: 40px; /* ou o valor que quiser */
+    left: -260px;
+    width: 75%;
+    background: linear-gradient(
+        to right,
+        rgba(102, 51, 153, 0.9) 0%,
+        rgba(102, 51, 153, 0.7) 10%,
+        rgba(102, 51, 153, 0) 50%
+    );
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: opacity 0.3s ease;
+    opacity: 1;
+    z-index: 7;
+}
+
+.container-xl .card .conteudo-card .area-titulo-da-fase::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px; /* espessura da "borda" */
+    background: linear-gradient(
+        to right,
+        rgba(0, 0, 0, .7) 0%,
+        rgba(0, 0, 0, 0.5) 5%,
+        rgba(0, 0, 0, 0) 15%
+    );
+    border-radius: 0 0 5px 5px; /* opcional: arredondar a borda também */
+}
+
+#areaTituloTexto {
+    transition: opacity 0.3s ease;
+    opacity: 1;
+}
+
+#areaTituloTexto.texto-fade {
+    opacity: 0;
+}
+
+.container-xl .card .conteudo-card .area-titulo-da-fase.mostrar {
+    left: 10px;
+    text-shadow: 1px 1px 5px black;
+}
+
+.container-xl .card .area-link-fases {
+    display: flex;
+    
+    justify-content: space-around;
+    align-items: center;
+    background-color: #efefef;
+    height: 10%;
+    padding: 0 5px;
+    box-shadow: 0px -5px 5px #22222253;
+    z-index: 3;
+}
+
+.selecao-da-fase .fase img{
+  position: absolute;
+  right: 10px;
+  bottom: 95px;
+  height: 80px;
+  opacity: 90%;
+}
+
+.selecao-da-fase .roupa img{
+  position: absolute;
+  right: 8px;
+  bottom: 85px;
+  height: 30px;
+  opacity: 90%;
+  z-index: 15;
+}
+
+.selecao-da-fase .jogar {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 120px;
+  height: 35px;
+  right: 8px;
+  bottom: 70px;
+  background-color: rgba(53, 53, 53, 0.719);
+  border-radius: 10px;
+  font-size: 20px;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  text-align: center;
+  border: 1px solid #656565;
+}
+
+.selecao-da-fase .jogar a {
+  color: #FFF;
+  width: 100%;
+}
+
+.container-xl .card .area-link-fases a {
+    /*flex: 1;  cada <a> ocupa o mesmo espaço */
+    display: flex;
+    height: 60%;
+    width: 25px;
+    margin: 1px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.3s ease;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.container-xl .card .area-link-fases .icone {
+    width: auto; 
+    height: 75px;
+    aspect-ratio: 1 / 2;
+    object-fit: contain;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+

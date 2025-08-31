@@ -13,240 +13,124 @@
 <body>
     <main>
         <div class="container-xl">
-            
-            <div class="card card-selecionado">
+            <script>
+                let nomes = [
+                    "VIDEL SATAN",
+                    "BULMA",
+                    "MAGA NEGRA",
+                    "PEACH",
+                    "MAI",
+                    "HINATA",
+                    "CHUN-LI"
+                ];
+                for (let i = 1; i <= 7; i++) {
+                    let nome = nomes[i - 1]; 
+                    document.write(`
 
-                <div class="menu-lateral-card">
-                    <div class="area-icones-thumb">
-                        <a href=""><img src="./assets/pixel_ai/t-5.png" alt=""></a>
-                        <a href="#"><img src="./assets/pixel_ai/t-5.png" alt=""></a>
-                        <a href="#"><img src="./assets/pixel_ai/t-5.png" alt=""></a>
-                        <a href="#"><img src="./assets/pixel_ai/t-5.png" alt=""></a>
-                        <a href="#"><img src="./assets/pixel_ai/t-4.png" alt=""></a>
-                        <a href="#"><img src="./assets/pixel_ai/t-3.png" alt=""></a>
-                        <a href="#"><img src="./assets/pixel_ai/t-2.png" alt=""></a>
-                        <a href="#"><img src="./assets/pixel_ai/t-1.png" title="Aqui vai uma explicação do que o ícone faz."  alt=""></a>
+                    <div class="card">
 
-                    </div>
+                        <div class="menu-lateral-card">
+                            <div class="area-icones-thumb">
+                                <a href="#"><img src="./assets/pixel_ai/t-5.png" alt=""></a>
+                                <a href="#"><img src="./assets/pixel_ai/t-5.png" alt=""></a>
+                                <a href="#"><img src="./assets/pixel_ai/t-5.png" alt=""></a>
+                                <a href="#"><img src="./assets/pixel_ai/t-5.png" alt=""></a>
+                                <a href="#"><img src="./assets/pixel_ai/t-4.png" alt=""></a>
+                                <a href="#"><img src="./assets/pixel_ai/t-3.png" alt=""></a>
+                                <a href="#"><img src="./assets/pixel_ai/t-2.png" alt=""></a>
+                                <a href="#"><img src="./assets/pixel_ai/t-1.png" title="Aqui vai uma explicação do que o ícone faz."  alt=""></a>
 
-                    <div class="controle-card">
-                        <a href="#"><img class="svg" src="./assets/svg/apagar.svg" alt=""></a>
-                        <a href="#"><img class="svg" src="./assets/svg/compartilhar.svg" alt=""></a>
-                        <a href="#"><img class="svg" src="./assets/svg/editar.svg" alt=""></a>
-                        <a href="#"><img class="svg" src="./assets/svg/baixar.svg" alt=""></a>
-                        
-                    </div>        
+                            </div>
+
+                            <div class="controle-card">
+                                <a href="#"><img class="svg" src="./assets/svg/apagar.svg" alt=""></a>
+                                <a href="#"><img class="svg" src="./assets/svg/compartilhar.svg" alt=""></a>
+                                <a href="#"><img class="svg" src="./assets/svg/editar.svg" alt=""></a>
+                                <a href="#"><img class="svg" src="./assets/svg/baixar.svg" alt=""></a>
                                 
-                    <div class="controle-card">
-                        <a href="#"><img class="svg lixeira" src="./assets/svg/lixeira.svg" alt=""></a>
-                    </div>
-                </div>
+                            </div>        
+                                        
+                            <div class="controle-card">
+                                <a href="#"><img class="svg lixeira" src="./assets/svg/lixeira.svg" alt=""></a>
+                            </div>
+                        </div>
 
-                <div class="menu-bolinha btnMenuBolinhaCard amostra">
-                    <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
-                        xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="349.569px" height="349.569px"
-                        viewBox="0 0 349.569 349.569" style="enable-background:new 0 0 349.569 349.569;"
-                        xml:space="preserve">
-                        <g>
-                            <g>
-                                <circle cx="39.081" cy="54.785" r="39.081" />
-                                <circle cx="39.081" cy="174.785" r="39.081" />
-                                <circle cx="39.081" cy="294.785" r="39.081" />
+                        <div class="menu-bolinha btnMenuBolinhaCard amostra">
+                            <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="349.569px" height="349.569px"
+                                viewBox="0 0 349.569 349.569" style="enable-background:new 0 0 349.569 349.569;"
+                                xml:space="preserve">
                                 <g>
-                                    <path d="M344.569,20.535H113.581c-2.757,0-5,2.243-5,5v58.5c0,2.757,2.243,5,5,5h230.988c2.757,0,5-2.243,5-5v-58.5
-                                    C349.569,22.778,347.326,20.535,344.569,20.535z" />
-                                    <path d="M344.569,140.535H113.581c-2.757,0-5,2.243-5,5v58.5c0,2.757,2.243,5,5,5h230.988c2.757,0,5-2.243,5-5v-58.5
-                                    C349.569,142.778,347.326,140.535,344.569,140.535z" />
-                                    <path d="M344.569,260.535H113.581c-2.757,0-5,2.243-5,5v58.5c0,2.757,2.243,5,5,5h230.988c2.757,0,5-2.243,5-5v-58.5
-                                    C349.569,262.778,347.326,260.535,344.569,260.535z" />
+                                    <g>
+                                        <circle cx="39.081" cy="54.785" r="39.081" />
+                                        <circle cx="39.081" cy="174.785" r="39.081" />
+                                        <circle cx="39.081" cy="294.785" r="39.081" />
+                                        <g>
+                                            <path d="M344.569,20.535H113.581c-2.757,0-5,2.243-5,5v58.5c0,2.757,2.243,5,5,5h230.988c2.757,0,5-2.243,5-5v-58.5
+                                            C349.569,22.778,347.326,20.535,344.569,20.535z" />
+                                            <path d="M344.569,140.535H113.581c-2.757,0-5,2.243-5,5v58.5c0,2.757,2.243,5,5,5h230.988c2.757,0,5-2.243,5-5v-58.5
+                                            C349.569,142.778,347.326,140.535,344.569,140.535z" />
+                                            <path d="M344.569,260.535H113.581c-2.757,0-5,2.243-5,5v58.5c0,2.757,2.243,5,5,5h230.988c2.757,0,5-2.243,5-5v-58.5
+                                            C349.569,262.778,347.326,260.535,344.569,260.535z" />
+                                        </g>
+                                    </g>
                                 </g>
-                            </g>
-                        </g>
-                    </svg>
-                </div>
-
-                <div class="conteudo-card">
-                    <div class="area-info-personagem" id="areaInfoPersonagem">
-                        <div class="cabecalho">
-                            <img class="bandeira" src="./assets/pixel_ai/Brasil.png" alt="">
-                            <div class="are-face">
-                                <img class="face" src="./assets/pixel_ai/1.png" alt="">
-                            </div>
-                                
-                            <div class="classificacao">
-                                <a href="#"><img src="./assets/pixel_ai/ESTRELA_1-4.png" alt=""></a>
-                                <a href="#"><img src="./assets/pixel_ai/ESTRELA_1-4.png" alt=""></a>
-                                <a href="#"><img src="./assets/pixel_ai/ESTRELA_1-4.png" alt=""></a>
-                                <a href="#"><img src="./assets/pixel_ai/ESTRELA_1-4.png" alt=""></a>
-                                <a href="#"><img src="./assets/pixel_ai/ESTRELA_5.png" alt=""></a>
-                            </div>
+                            </svg>
                         </div>
-                        
-                        <div class="tabela">
-                            <table>
-                                <tbody>
-                                  <tr><td class="chave"><strong>Altura:</strong></td><td>1.65 m</td></tr>
-                                  <tr><td class="chave"><strong>Busto:</strong></td><td>85 cm</td></tr>
-                                  <tr><td class="chave"><strong>Cintura:</strong></td><td>62 cm</td></tr>
-                                  <tr><td class="chave"><strong>Quadril:</strong></td><td>93 cm</td></tr>
-                                  <tr><td class="chave"><strong>idade:</strong></td><td>27 anos</td></tr>
-                                  <tr><td class="chave"><strong>Peso:</strong></td><td>55 kg</td></tr>
-                                  <tr><td class="chave"><strong>Hobbie:</strong></td><td>Cantar</td></tr>
-                                  <tr><td class="chave"><strong>Habilidade:</strong></td><td>Voar</td></tr>
-                                  <tr class="obs"><td colspan="2" class="obs">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Repellendus alias recusandae autem.</td></tr>
-                                </tbody>
-                              </table>
-                        </div>
-                    </div>
-                    <img class="img-principal" src="./assets/pixel_ai/1.png" alt="imagem da personagem ${i}" />
-                    <div class="area-titulo-da-fase mostrar" id="area-titulo-da-fase">
-                        <span id="areaTituloTexto">VIDEL SATAN</span>
-                    </div>
 
-                </div>
-
-                <div class="selecao-da-fase">
-                    <div class="fase">
-                    <img src="./assets/pixel_ai/emoje-1.png" alt="">
-                    </div>
-                    <div class="roupa">
-                    <img src="./assets/pixel_ai/t-5.png" alt="">
-                    </div>
-                    <div class="jogar">
-                    <a class="link" href="#">Jogar</a>
-                    </div>                      
-                </div>
-
-                <div class="area-link-fases">
-                    <a href="#" data-titulo="TRAJES NORMAIS"><img class="icone" src="./assets/pixel_ai/emoje-1.png" /></a>
-                    <a href="#" data-titulo="PISCINA"><img class="icone" src="./assets/pixel_ai/emoje-2.png" /></a>
-                    <a href="#" data-titulo="LENDO"><img class="icone" src="./assets/pixel_ai/emoje-3.png" /></a>
-                    <a href="#" data-titulo="DORMINDO"><img class="icone" src="./assets/pixel_ai/emoje-4.png" /></a>
-                    <a href="#" data-titulo="BANHO"><img class="icone" src="./assets/pixel_ai/emoje-5.png" /></a>
-                    <a href="#" data-titulo="NUA"><img class="icone" src="./assets/pixel_ai/emoje-6.png" /></a>
-                </div>    
-
-            </div>            
-
-    <script>
-        for (let i = 2; i <= 7; i++) {
-            document.write(`
-
-            <div class="card">
-
-                <div class="menu-lateral-card">
-                    <div class="area-icones-thumb">
-                        <a href="#"><img src="./assets/pixel_ai/t-5.png" alt=""></a>
-                        <a href="#"><img src="./assets/pixel_ai/t-5.png" alt=""></a>
-                        <a href="#"><img src="./assets/pixel_ai/t-5.png" alt=""></a>
-                        <a href="#"><img src="./assets/pixel_ai/t-5.png" alt=""></a>
-                        <a href="#"><img src="./assets/pixel_ai/t-4.png" alt=""></a>
-                        <a href="#"><img src="./assets/pixel_ai/t-3.png" alt=""></a>
-                        <a href="#"><img src="./assets/pixel_ai/t-2.png" alt=""></a>
-                        <a href="#"><img src="./assets/pixel_ai/t-1.png" title="Aqui vai uma explicação do que o ícone faz."  alt=""></a>
-
-                    </div>
-
-                    <div class="controle-card">
-                        <a href="#"><img class="svg" src="./assets/svg/apagar.svg" alt=""></a>
-                        <a href="#"><img class="svg" src="./assets/svg/compartilhar.svg" alt=""></a>
-                        <a href="#"><img class="svg" src="./assets/svg/editar.svg" alt=""></a>
-                        <a href="#"><img class="svg" src="./assets/svg/baixar.svg" alt=""></a>
-                        
-                    </div>        
-                                
-                    <div class="controle-card">
-                        <a href="#"><img class="svg lixeira" src="./assets/svg/lixeira.svg" alt=""></a>
-                    </div>
-                </div>
-
-                <div class="menu-bolinha btnMenuBolinhaCard amostra">
-                    <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
-                        xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="349.569px" height="349.569px"
-                        viewBox="0 0 349.569 349.569" style="enable-background:new 0 0 349.569 349.569;"
-                        xml:space="preserve">
-                        <g>
-                            <g>
-                                <circle cx="39.081" cy="54.785" r="39.081" />
-                                <circle cx="39.081" cy="174.785" r="39.081" />
-                                <circle cx="39.081" cy="294.785" r="39.081" />
-                                <g>
-                                    <path d="M344.569,20.535H113.581c-2.757,0-5,2.243-5,5v58.5c0,2.757,2.243,5,5,5h230.988c2.757,0,5-2.243,5-5v-58.5
-                                    C349.569,22.778,347.326,20.535,344.569,20.535z" />
-                                    <path d="M344.569,140.535H113.581c-2.757,0-5,2.243-5,5v58.5c0,2.757,2.243,5,5,5h230.988c2.757,0,5-2.243,5-5v-58.5
-                                    C349.569,142.778,347.326,140.535,344.569,140.535z" />
-                                    <path d="M344.569,260.535H113.581c-2.757,0-5,2.243-5,5v58.5c0,2.757,2.243,5,5,5h230.988c2.757,0,5-2.243,5-5v-58.5
-                                    C349.569,262.778,347.326,260.535,344.569,260.535z" />
-                                </g>
-                            </g>
-                        </g>
-                    </svg>
-                </div>
-
-                <div class="conteudo-card">
-                    <div class="area-info-personagem" id="areaInfoPersonagem">
-                        <div class="cabecalho">
-                            <img class="bandeira" src="./assets/pixel_ai/Brasil.png" alt="">
-                            <div class="are-face">
-                                <img class="face" src="./assets/pixel_ai/${i}.png" alt="">
+                        <div class="conteudo-card">
+                            <div class="area-info-personagem" id="areaInfoPersonagem">
+                                <div class="cabecalho">
+                                    <img class="bandeira" src="./assets/pixel_ai/Brasil.png" alt="">
+                                    <div class="are-face">
+                                        <img class="face" src="./assets/pixel_ai/${i}.png" alt="">
+                                    </div>
+                                        
+                                    <div class="classificacao">
+                                        <a href="#"><img src="./assets/pixel_ai/ESTRELA_1-4.png" alt=""></a>
+                                        <a href="#"><img src="./assets/pixel_ai/ESTRELA_1-4.png" alt=""></a>
+                                        <a href="#"><img src="./assets/pixel_ai/ESTRELA_1-4.png" alt=""></a>
+                                        <a href="#"><img src="./assets/pixel_ai/ESTRELA_1-4.png" alt=""></a>
+                                        <a href="#"><img src="./assets/pixel_ai/ESTRELA_5.png" alt=""></a>
+                                    </div>
+                                </div>
+                                <div class="tabela">
+                                    <table>
+                                        <tbody>
+                                        <tr><td class="chave"><strong>Altura:</strong></td><td>1.65 m</td></tr>
+                                        <tr><td class="chave"><strong>Busto:</strong></td><td>85 cm</td></tr>
+                                        <tr><td class="chave"><strong>Cintura:</strong></td><td>62 cm</td></tr>
+                                        <tr><td class="chave"><strong>Quadril:</strong></td><td>93 cm</td></tr>
+                                        <tr><td class="chave"><strong>idade:</strong></td><td>27 anos</td></tr>
+                                        <tr><td class="chave"><strong>Peso:</strong></td><td>55 kg</td></tr>
+                                        <tr><td class="chave"><strong>Hobbie:</strong></td><td>Cantar</td></tr>
+                                        <tr><td class="chave"><strong>Habilidade:</strong></td><td>Voar</td></tr>
+                                        <tr class="obs"><td colspan="2" class="obs">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Repellendus alias recusandae autem.</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                                
-                            <div class="classificacao">
-                                <a href="#"><img src="./assets/pixel_ai/ESTRELA_1-4.png" alt=""></a>
-                                <a href="#"><img src="./assets/pixel_ai/ESTRELA_1-4.png" alt=""></a>
-                                <a href="#"><img src="./assets/pixel_ai/ESTRELA_1-4.png" alt=""></a>
-                                <a href="#"><img src="./assets/pixel_ai/ESTRELA_1-4.png" alt=""></a>
-                                <a href="#"><img src="./assets/pixel_ai/ESTRELA_5.png" alt=""></a>
+                            <img class="img-principal" src="./assets/pixel_ai/${i}.png" alt="imagem da personagem ${i}" />
+                            <div class="area-titulo-da-fase mostrar" id="area-titulo-da-fase">
+                                <span id="areaTituloTexto">${nome}</span>
                             </div>
                         </div>
-                        <div class="tabela">
-                            <table>
-                                <tbody>
-                                  <tr><td class="chave"><strong>Altura:</strong></td><td>1.65 m</td></tr>
-                                  <tr><td class="chave"><strong>Busto:</strong></td><td>85 cm</td></tr>
-                                  <tr><td class="chave"><strong>Cintura:</strong></td><td>62 cm</td></tr>
-                                  <tr><td class="chave"><strong>Quadril:</strong></td><td>93 cm</td></tr>
-                                  <tr><td class="chave"><strong>idade:</strong></td><td>27 anos</td></tr>
-                                  <tr><td class="chave"><strong>Peso:</strong></td><td>55 kg</td></tr>
-                                  <tr><td class="chave"><strong>Hobbie:</strong></td><td>Cantar</td></tr>
-                                  <tr><td class="chave"><strong>Habilidade:</strong></td><td>Voar</td></tr>
-                                  <tr class="obs"><td colspan="2" class="obs">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Repellendus alias recusandae autem.</td></tr>
-                                </tbody>
-                              </table>
-                        </div>
-                    </div>
-                    <img class="img-principal" src="./assets/pixel_ai/${i}.png" alt="imagem da personagem ${i}" />
-                    <div class="area-titulo-da-fase mostrar" id="area-titulo-da-fase">
-                        <span id="areaTituloTexto">VIDEL SATAN</span>
-                    </div>
-                </div>
 
+                  
 
-                <div class="selecao-da-fase">
-                    <div class="fase">
-                    <img src="./assets/pixel_ai/emoje-1.png" alt="">
-                    </div>
-                    <div class="roupa">
-                    <img src="./assets/pixel_ai/t-5.png" alt="">
-                    </div>
-                    <div class="jogar">
-                    <a class="link" href="#">Jogar</a>
-                    </div>                      
-                </div>                    
+                        <div class="area-link-fases">
+                            <a href="./jogo/quebra-cabeça.html" data-titulo="TRAJES NORMAIS"><img class="icone" src="./assets/pixel_ai/emoje-1.png" /></a>
+                            <a href="./jogo/quebra-cabeça.html" data-titulo="PISCINA"><img class="icone" src="./assets/pixel_ai/emoje-2.png" /></a>
+                            <a href="./jogo/quebra-cabeça.html" data-titulo="LENDO"><img class="icone" src="./assets/pixel_ai/emoje-3.png" /></a>
+                            <a href="./jogo/quebra-cabeça.html" data-titulo="DORMINDO"><img class="icone" src="./assets/pixel_ai/emoje-4.png" /></a>
+                            <a href="./jogo/quebra-cabeça.html" data-titulo="BANHO"><img class="icone" src="./assets/pixel_ai/emoje-5.png" /></a>
+                            <a href="./jogo/quebra-cabeça.html" data-titulo="NUA"><img class="icone" src="./assets/pixel_ai/emoje-6.png" /></a>
+                        </div>    
 
-                <div class="area-link-fases">
-                    <a href="./jogo/quebra-cabeça.html" data-titulo="TRAJES NORMAIS"><img class="icone" src="./assets/pixel_ai/emoje-1.png" /></a>
-                    <a href="./jogo/quebra-cabeça.html" data-titulo="PISCINA"><img class="icone" src="./assets/pixel_ai/emoje-2.png" /></a>
-                    <a href="./jogo/quebra-cabeça.html" data-titulo="LENDO"><img class="icone" src="./assets/pixel_ai/emoje-3.png" /></a>
-                    <a href="./jogo/quebra-cabeça.html" data-titulo="DORMINDO"><img class="icone" src="./assets/pixel_ai/emoje-4.png" /></a>
-                    <a href="./jogo/quebra-cabeça.html" data-titulo="BANHO"><img class="icone" src="./assets/pixel_ai/emoje-5.png" /></a>
-                    <a href="./jogo/quebra-cabeça.html" data-titulo="NUA"><img class="icone" src="./assets/pixel_ai/emoje-6.png" /></a>
-                </div>    
-
-            </div>                
-            `);
-        }
-        </script>
+                    </div>                
+                    `);
+                }
+            </script>
         </div>
     </main>
     

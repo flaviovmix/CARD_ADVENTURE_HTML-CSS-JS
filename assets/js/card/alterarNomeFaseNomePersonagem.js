@@ -15,26 +15,29 @@ function trocarTextoComFade(novoTexto, elementoTitulo) {
     }, 300);
 }
 
-document.querySelectorAll('.area-link-fases a').forEach(function (item) {
-    const icon = item.querySelector('.icone');
-    const card = item.closest('.card'); // Encontra o card pai mais próximo
-    const tituloDoCard = card.querySelector('#area-titulo-da-fase'); // Seleciona o título dentro do card
+document.querySelectorAll('.card').forEach(function(card) {
+    const tituloDoCard = card.querySelector('#area-titulo-da-fase'); 
+    const nomePersonagem = tituloDoCard.textContent;
 
-    item.addEventListener('mouseenter', function () {
-        clearTimeout(timeoutVoltarPadrao);
-        icon.style.transition = 'transform 0.3s ease';
-        icon.style.transform = 'translateY(-8px)';
+    card.querySelectorAll('.area-link-fases a').forEach(function (item) {
+        const icon = item.querySelector('.icone');
 
-        const titulo = item.getAttribute('data-titulo');
-        trocarTextoComFade(titulo, tituloDoCard); // Usa o título correto do card
-    });
+        item.addEventListener('mouseenter', function () {
+            clearTimeout(timeoutVoltarPadrao);
+            icon.style.transition = 'transform 0.3s ease';
+            icon.style.transform = 'translateY(-8px)';
 
-    item.addEventListener('mouseleave', function () {
-        icon.style.transition = 'transform 0.3s ease';
-        icon.style.transform = 'translateY(0)';
+            const titulo = item.getAttribute('data-titulo');
+            trocarTextoComFade(titulo, tituloDoCard);
+        });
 
-        timeoutVoltarPadrao = setTimeout(() => {
-            trocarTextoComFade(nomePadrao, tituloDoCard); // Usa o título correto do card
-        }, 1000);
+        item.addEventListener('mouseleave', function () {
+            icon.style.transition = 'transform 0.3s ease';
+            icon.style.transform = 'translateY(0)';
+
+            timeoutVoltarPadrao = setTimeout(() => {
+                trocarTextoComFade(nomePersonagem, tituloDoCard); // volta pro nome original
+            }, 1000);
+        });
     });
 });

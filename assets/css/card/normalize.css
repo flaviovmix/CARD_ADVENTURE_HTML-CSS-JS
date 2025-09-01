@@ -2,6 +2,7 @@
     box-sizing: border-box;
   }
   
+
 html {
     line-height: 1.15;
     -webkit-text-size-adjust: 100%;
@@ -10,6 +11,8 @@ html {
 body {
     margin: 0;
     background-color: var(--cor-body-background);
+    user-select: none;
+    
 }
 
 main {

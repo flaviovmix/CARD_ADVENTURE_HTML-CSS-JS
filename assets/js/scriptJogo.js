@@ -202,14 +202,20 @@
   canvas.addEventListener("mouseup", () => {
     if (!draggingPiece) return;
 
-    if (draggingPiece.isInCorrectPosition()) {
-      draggingPiece.lockPosition();
-      drawAll();
-      if (checkCompleted()) {
-        // Feedback simples ao concluir
-        setTimeout(() => alert("Parabéns! Quebra-cabeça concluído!"), 10);
-      }
-    }
+ if (draggingPiece.isInCorrectPosition()) {
+  draggingPiece.lockPosition();
+  drawAll();
+  if (checkCompleted()) {
+    setTimeout(() => {
+      alert("Parabéns! Quebra-cabeça concluído!");
+      // recarrega a mesma página
+      location.reload();
+
+      // ou, se quiser ir para outra página / novo arquivo:
+      // location.href = "quebra-cabeca2.html";
+    }, 10);
+  }
+}
 
     draggingPiece = null;
   });

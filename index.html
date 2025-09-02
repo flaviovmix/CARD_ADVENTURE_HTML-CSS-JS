@@ -80,7 +80,7 @@
                                 <div class="cabecalho">
                                     <img class="bandeira" src="./assets/pixel_ai/${p.bandeira}.png" alt="">
                                     <div class="are-face">
-                                        <img class="face" src="./assets/pixel_ai/${p.nome}/1.png" alt="">
+                                        <img class="face" src="./assets/pixel_ai/${p.nome}/img.png" alt="">
                                     </div>
                                         
                                     <div class="classificacao">
@@ -114,15 +114,32 @@
                             </div>
                         </div>
 
-                  
-
                         <div class="area-link-fases">
-                            <a href="./assets/pixel_ai/${p.nome}/quebra-cabeça.html?img=TRAJES NORMAIS" data-titulo="TRAJES NORMAIS"><img class="icone" src="./assets/pixel_ai/emoje-1.png" /></a>
-                            <a href="./assets/pixel_ai/${p.nome}/quebra-cabeça.html?img=PISCINA" data-titulo="PISCINA"><img class="icone" src="./assets/pixel_ai/emoje-2.png" /></a>
-                            <a href="./assets/pixel_ai/${p.nome}/quebra-cabeça.html?img=LENDO" data-titulo="LENDO"><img class="icone" src="./assets/pixel_ai/emoje-3.png" /></a>
-                            <a href="./assets/pixel_ai/${p.nome}/quebra-cabeça.html?img=DORMINDO" data-titulo="DORMINDO"><img class="icone" src="./assets/pixel_ai/emoje-4.png" /></a>
-                            <a href="./assets/pixel_ai/${p.nome}/quebra-cabeça.html?img=BANHO" data-titulo="BANHO"><img class="icone" src="./assets/pixel_ai/emoje-5.png" /></a>
-                            <a href="./assets/pixel_ai/${p.nome}/quebra-cabeça.html?img=NUA" data-titulo="NUA"><img class="icone" src="./assets/pixel_ai/emoje-6.png" /></a>
+                            
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('TRAJES NORMAIS')}" data-titulo="TRAJES NORMAIS">
+                              <img class="icone" src="./assets/pixel_ai/emoje-1.png" />
+                            </a>
+
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('PISCINA')}" data-titulo="PISCINA">
+                              <img class="icone" src="./assets/pixel_ai/emoje-2.png" />
+                            </a>
+
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('LENDO')}" data-titulo="LENDO">
+                              <img class="icone" src="./assets/pixel_ai/emoje-3.png" />
+                            </a>
+
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('DORMINDO')}" data-titulo="DORMINDO">
+                              <img class="icone" src="./assets/pixel_ai/emoje-4.png" />
+                            </a>
+
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('BANHO')}" data-titulo="BANHO">
+                              <img class="icone" src="./assets/pixel_ai/emoje-5.png" />
+                            </a>
+
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('NUA')}" data-titulo="NUA">
+                              <img class="icone" src="./assets/pixel_ai/emoje-6.png" />
+                            </a>
+
                         </div>    
 
                     </div>                

@@ -6,8 +6,8 @@
   const container = document.getElementById("game-container");
 
   // Ajuste a dificuldade aqui:
-  const rows = 2;  // linhas do quebra-cabeça
-  const cols = 2;  // colunas do quebra-cabeça
+  const rows = 1;  // linhas do quebra-cabeça
+  const cols = 1;  // colunas do quebra-cabeça
 
   // Área alvo (tamanho real da imagem dentro do canvas)
   const imageWidth = 700;
@@ -18,7 +18,7 @@
 
   // Se você usa pastas com números (1..7), ajuste aqui:
   const MIN_NUM = 1;
-  const MAX_NUM = 7;
+  const MAX_NUM = 4;
 
   // ======= CAPTURA DE PARAMS =======
   const params = new URLSearchParams(window.location.search);

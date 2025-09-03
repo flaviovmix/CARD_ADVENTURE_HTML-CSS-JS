@@ -16,20 +16,21 @@
 
             <script>
               let personagens = [
-                //   {
-                //       nome: "VIDEL",
-                //       bandeira: "japao",
-                //       altura: "1.65 m",
-                //       busto: "85 cm",
-                //       cintura: "62 cm",
-                //       quadril: "93 cm",
-                //       idade: "27 anos",
-                //       peso: "55 kg",
-                //       hobbie: "Cantar",
-                //       origen: "Dragon Ball Z",
-                //       habilidade: "Voar",
-                //       obs: "Nunca foge de uma luta, conquista respeito com sua perseverança."
-                //   },
+                  {
+                      nome: "PRINCESA PEACH",
+                      bandeira: "reino_cogumelo",
+                      altura: "1.73 m",
+                      busto: "87 cm",
+                      cintura: "61 cm",
+                      quadril: "89 cm",
+                      idade: "24 anos",
+                      peso: "52 kg",
+                      hobbie: "Jardinagem e culinária",
+                      origen: "Super Mario Bros",
+                      habilidade: "Flutuar no ar com seu vestido",
+                      obs: "Carismática e corajosa, mas não subestime sua força.",
+                      numFotos: '5'
+                  },
 
                   {
                       nome: "CHUN-LI",
@@ -43,7 +44,8 @@
                       hobbie: "Artes marciais",
                       origen: "Street Fighter",
                       habilidade: "Chutes poderosas",
-                      obs: "Primeira protagonista feminina dos games de luta."
+                      obs: "Primeira protagonista feminina dos games de luta.",
+                      numFotos: '0'
                   }
                 ]
                 for (let i = 0; i < personagens.length; i++) {
@@ -116,27 +118,27 @@
 
                         <div class="area-link-fases">
                             
-                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('TRAJES NORMAIS')}" data-titulo="TRAJES NORMAIS">
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('TRAJES NORMAIS')}&numFotos=${encodeURIComponent(p.numFotos)}" data-titulo="TRAJES NORMAIS">
                               <img class="icone" src="./assets/pixel_ai/emoje-1.png" />
                             </a>
 
-                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('PISCINA')}" data-titulo="PISCINA">
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('PISCINA')}&numFotos=${encodeURIComponent(p.numFotos)}" data-titulo="PISCINA">
                               <img class="icone" src="./assets/pixel_ai/emoje-2.png" />
                             </a>
 
-                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('LENDO')}" data-titulo="LENDO">
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('LENDO')}&numFotos=${encodeURIComponent(p.numFotos)}" data-titulo="LENDO">
                               <img class="icone" src="./assets/pixel_ai/emoje-3.png" />
                             </a>
 
-                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('DORMINDO')}" data-titulo="DORMINDO">
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('DORMINDO')}&numFotos=${encodeURIComponent(p.numFotos)}" data-titulo="DORMINDO">
                               <img class="icone" src="./assets/pixel_ai/emoje-4.png" />
                             </a>
 
-                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('BANHO')}" data-titulo="BANHO">
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('BANHO')}&numFotos=${encodeURIComponent(p.numFotos)}" data-titulo="BANHO">
                               <img class="icone" src="./assets/pixel_ai/emoje-5.png" />
                             </a>
 
-                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('NUA')}" data-titulo="NUA">
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('NUA')}&numFotos=${encodeURIComponent(p.numFotos)}" data-titulo="NUA">
                               <img class="icone" src="./assets/pixel_ai/emoje-6.png" />
                             </a>
 

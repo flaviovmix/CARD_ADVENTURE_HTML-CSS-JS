@@ -5,21 +5,22 @@
   const ctx = canvas.getContext("2d");
   const container = document.getElementById("game-container");
 
-  const rows = 6;  // linhas
-  const cols = 6;  // colunas
+  const rows = 4;  // linhas
+  const cols = 3;  // colunas
 
   const imageWidth = 700;
   const imageHeight = 900;
-
-  const SNAP = 30;
-  const MIN_NUM = 1;
-  const MAX_NUM = 4;
 
   // ======= PARAMS =======
   const params = new URLSearchParams(window.location.search);
   const nome = params.get("nome");
   const fase = params.get("fase");
+  const numFotos = params.get("numFotos");
   const dataImg = container.getAttribute("data-img");
+
+  const SNAP = 30;
+  const MIN_NUM = 1;
+  const MAX_NUM = numFotos;
 
   const offsetXTarget = (canvas.width - imageWidth) / 2;
   const offsetYTarget = (canvas.height - imageHeight) / 2;

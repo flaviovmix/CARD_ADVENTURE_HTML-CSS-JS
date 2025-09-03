@@ -5,38 +5,25 @@
   const ctx = canvas.getContext("2d");
   const container = document.getElementById("game-container");
 
-  // Ajuste a dificuldade aqui:
-  const rows = 1;  // linhas do quebra-cabeça
-  const cols = 1;  // colunas do quebra-cabeça
+  const rows = 6;  // linhas
+  const cols = 6;  // colunas
 
-  // Área alvo (tamanho real da imagem dentro do canvas)
   const imageWidth = 700;
   const imageHeight = 900;
 
-  // Tolerância para "encaixar"
   const SNAP = 30;
-
-  // Se você usa pastas com números (1..7), ajuste aqui:
   const MIN_NUM = 1;
   const MAX_NUM = 4;
 
-  // ======= CAPTURA DE PARAMS =======
+  // ======= PARAMS =======
   const params = new URLSearchParams(window.location.search);
-  const nome = params.get("nome"); // ex.: "CHUN-LI"
-  const fase = params.get("fase"); // ex.: "TRAJES NORMAIS"
+  const nome = params.get("nome");
+  const fase = params.get("fase");
+  const dataImg = container.getAttribute("data-img");
 
-  // Data-atributo como fallback (pode ser caminho completo OU só nome do arquivo)
-  const dataImg = container.getAttribute("data-img"); // ex.: "personagem2.png" ou "./assets/pixel_ai/x/y.png"
-
-  // Normaliza caminho (sem assumir slug se você já renomeou as pastas)
-  // Se quiser slugar automaticamente: descomente e use slugify(fase) na baseFolder.
-  // const slugify = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-');
-
-  // Calcula offsets para centralizar a área de montagem (700x900) no canvas
   const offsetXTarget = (canvas.width - imageWidth) / 2;
   const offsetYTarget = (canvas.height - imageHeight) / 2;
 
-  // Monta o caminho da imagem
   function buildImageSrc() {
     if (nome && fase) {
       const randomNum = Math.floor(Math.random() * (MAX_NUM - MIN_NUM + 1)) + MIN_NUM;
@@ -44,60 +31,54 @@
       return `${baseFolder}/${randomNum}.png`;
     }
     if (dataImg) {
-      // Se veio com caminho (contém "/"), usamos direto.
       if (dataImg.includes("/")) return dataImg;
-      // Se veio só o nome do arquivo, assumimos que está em ./assets/pixel_ai/
       return `./assets/pixel_ai/${dataImg}`;
     }
-    // Último fallback (coloque um seu)
     return `./assets/pixel_ai/default/1.png`;
   }
 
   const imageSrc = buildImageSrc();
   const image = new Image();
-  // Ajuda com caminhos contendo espaços/acentos
   image.src = imageSrc;
 
-  // ======= LÓGICA DO QUEBRA-CABEÇA =======
+  // ======= PEÇAS & GRUPOS =======
   const pieceWidth = imageWidth / cols;
   const pieceHeight = imageHeight / rows;
 
   let pieces = [];
-  let draggingPiece = null;
-  let offsetX = 0, offsetY = 0;
+  let groups = [];
+  let draggingGroup = null;
+  let groupOffsetX = 0, groupOffsetY = 0;
 
   class Piece {
-    constructor(imgX, imgY, canvasX, canvasY) {
-      this.imgX = imgX;       // posição dentro da imagem
-      this.imgY = imgY;
-      this.canvasX = canvasX; // posição atual no canvas
-      this.canvasY = canvasY;
+    constructor(row, col, startX, startY) {
+      this.row = row;
+      this.col = col;
+      this.imgX = col * pieceWidth;
+      this.imgY = row * pieceHeight;
+      this.canvasX = startX;
+      this.canvasY = startY;
       this.width = pieceWidth;
       this.height = pieceHeight;
       this.locked = false;
+      this.groupId = null;
     }
 
     draw() {
       ctx.drawImage(
         image,
-        this.imgX,
-        this.imgY,
-        this.width,
-        this.height,
-        this.canvasX,
-        this.canvasY,
-        this.width,
-        this.height
+        this.imgX, this.imgY,
+        this.width, this.height,
+        this.canvasX, this.canvasY,
+        this.width, this.height
       );
     }
 
     isClicked(x, y) {
       return (
         !this.locked &&
-        x > this.canvasX &&
-        x < this.canvasX + this.width &&
-        y > this.canvasY &&
-        y < this.canvasY + this.height
+        x > this.canvasX && x < this.canvasX + this.width &&
+        y > this.canvasY && y < this.canvasY + this.height
       );
     }
 
@@ -117,56 +98,94 @@
     }
   }
 
-  function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
+  // ======= GRUPOS =======
+  function createGroup(piece) {
+    const groupId = groups.length;
+    piece.groupId = groupId;
+    groups.push([piece]);
+  }
+
+  function mergeGroups(groupA, groupB, anchorPiece, otherPiece) {
+    if (groupA === groupB) return;
+
+    // diferença entre onde o "otherPiece" está e onde deveria estar
+    const dx = (anchorPiece.canvasX + (otherPiece.col - anchorPiece.col) * pieceWidth) - otherPiece.canvasX;
+    const dy = (anchorPiece.canvasY + (otherPiece.row - anchorPiece.row) * pieceHeight) - otherPiece.canvasY;
+
+    // aplicar o deslocamento em todo o grupo B
+    groups[groupB].forEach(p => {
+      p.canvasX += dx;
+      p.canvasY += dy;
+      p.groupId = groupA;
+    });
+
+    // fundir grupos
+    groups[groupA] = groups[groupA].concat(groups[groupB]);
+    groups[groupB] = [];
+  }
+
+  function moveGroup(groupId, dx, dy) {
+    groups[groupId].forEach(p => {
+      p.canvasX += dx;
+      p.canvasY += dy;
+    });
+  }
+
+  // ======= SNAP ENTRE PEÇAS =======
+  function trySnap(piece) {
+    for (let other of pieces) {
+      if (piece === other || other.locked) continue;
+
+      const isNeighbor =
+        (piece.row === other.row && Math.abs(piece.col - other.col) === 1) ||
+        (piece.col === other.col && Math.abs(piece.row - other.row) === 1);
+
+      if (!isNeighbor) continue;
+
+      const dx = (other.col - piece.col) * pieceWidth;
+      const dy = (other.row - piece.row) * pieceHeight;
+
+      if (
+        Math.abs((piece.canvasX + dx) - other.canvasX) < SNAP &&
+        Math.abs((piece.canvasY + dy) - other.canvasY) < SNAP
+      ) {
+        // alinhar outro grupo com base na peça atual
+        mergeGroups(piece.groupId, other.groupId, piece, other);
+      }
     }
   }
 
   function drawAll() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Área de montagem (visual)
-    ctx.fillStyle = "rgba(0, 0, 0, 0.08)";
+    ctx.fillStyle = "rgba(0,0,0,0.08)";
     ctx.fillRect(offsetXTarget, offsetYTarget, imageWidth, imageHeight);
-
-    // Desenha peças
     pieces.forEach(p => p.draw());
   }
 
   function checkCompleted() {
-    return pieces.every(p => p.locked);
+    return pieces.every(p => p.isInCorrectPosition());
   }
 
+  // ======= INICIALIZA =======
   image.onload = function () {
-    // Cria peças a partir da grade rows x cols
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         const startX = Math.random() * (canvas.width - pieceWidth);
         const startY = Math.random() * (canvas.height - pieceHeight);
-        pieces.push(
-          new Piece(
-            c * pieceWidth,         // recorte X na imagem
-            r * pieceHeight,        // recorte Y na imagem
-            startX,                 // posição inicial no canvas
-            startY
-          )
-        );
+        const piece = new Piece(r, c, startX, startY);
+        pieces.push(piece);
+        createGroup(piece);
       }
     }
-
-    shuffle(pieces);
     drawAll();
   };
 
   image.onerror = function () {
     console.error("Falha ao carregar imagem:", imageSrc);
-    // Opcional: fallback simples
-    alert("Não foi possível carregar a imagem do quebra-cabeça.\nVerifique o caminho/pastas e os parâmetros da URL.");
+    alert("Não foi possível carregar a imagem.");
   };
 
-  // ======= INPUT DO MOUSE =======
+  // ======= INPUT MOUSE =======
   canvas.addEventListener("mousedown", (e) => {
     const rect = canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
@@ -174,50 +193,51 @@
 
     for (let i = pieces.length - 1; i >= 0; i--) {
       if (pieces[i].isClicked(mouseX, mouseY)) {
-        draggingPiece = pieces[i];
-        offsetX = mouseX - draggingPiece.canvasX;
-        offsetY = mouseY - draggingPiece.canvasY;
+        draggingGroup = pieces[i].groupId;
 
-        // traz a peça para "frente"
-        pieces.splice(i, 1);
-        pieces.push(draggingPiece);
-        drawAll();
+        // calcular offset em relação ao grupo inteiro (mínimo X e Y do grupo)
+        const groupPieces = groups[draggingGroup];
+        const minX = Math.min(...groupPieces.map(p => p.canvasX));
+        const minY = Math.min(...groupPieces.map(p => p.canvasY));
+
+        groupOffsetX = mouseX - minX;
+        groupOffsetY = mouseY - minY;
+
         break;
       }
     }
   });
 
   canvas.addEventListener("mousemove", (e) => {
-    if (!draggingPiece) return;
+    if (draggingGroup === null) return;
     const rect = canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    draggingPiece.canvasX = mouseX - offsetX;
-    draggingPiece.canvasY = mouseY - offsetY;
+    const groupPieces = groups[draggingGroup];
+    const minX = Math.min(...groupPieces.map(p => p.canvasX));
+    const minY = Math.min(...groupPieces.map(p => p.canvasY));
 
+    const dx = mouseX - groupOffsetX - minX;
+    const dy = mouseY - groupOffsetY - minY;
+
+    moveGroup(draggingGroup, dx, dy);
     drawAll();
   });
 
   canvas.addEventListener("mouseup", () => {
-    if (!draggingPiece) return;
+    if (draggingGroup === null) return;
 
- if (draggingPiece.isInCorrectPosition()) {
-  draggingPiece.lockPosition();
-  drawAll();
-  if (checkCompleted()) {
-    setTimeout(() => {
-      alert("Parabéns! Quebra-cabeça concluído!");
-      // recarrega a mesma página
-      location.reload();
+    groups[draggingGroup].forEach(p => trySnap(p));
+    drawAll();
 
-      // ou, se quiser ir para outra página / novo arquivo:
-      // location.href = "quebra-cabeca2.html";
-    }, 10);
-  }
-}
+    if (checkCompleted()) {
+      setTimeout(() => {
+        alert("Parabéns! Quebra-cabeça concluído!");
+        location.reload();
+      }, 10);
+    }
 
-    draggingPiece = null;
+    draggingGroup = null;
   });
-
 })();

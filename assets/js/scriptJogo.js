@@ -18,8 +18,8 @@
   }
 
   // ======= GRID =======
-  const rows = 2;
-  const cols = 2;
+  const rows = 3;
+  const cols = 3;
 
   // ======= VARS DINÂMICAS =======
   let imageWidth = 0, imageHeight = 0;     // real
@@ -305,7 +305,9 @@
         startDist: dist || 1,
         startScale: viewScale,
         startMid: mid,
-        worldCenter: screenToWorld(mid.x, mid.y)
+        worldCenter: screenToWorld(mid.x, mid.y),
+        startAngle: angleBetween(p0, p1),
+        lastAngle: 0 // acumulador
       };
     } else {
       // pan com dois dedos: move a view pelo deslocamento do mid
@@ -314,6 +316,40 @@
 
       // Zoom relativo
       const newScale = Math.max(0.2, Math.min(5, pinch.startScale * (dist / pinch.startDist || 1)));
+
+      const currentAngle = angleBetween(p0, p1);
+      let deltaAngle = currentAngle - pinch.startAngle;
+
+      // normaliza entre -π e π
+      while (deltaAngle < -Math.PI) deltaAngle += 2 * Math.PI;
+      while (deltaAngle >  Math.PI) deltaAngle -= 2 * Math.PI;
+
+      const angleDeg = deltaAngle * (180 / Math.PI); // opcional
+
+      // Aplica rotação apenas se um grupo estiver ativo
+      if (draggingGroup !== null) {
+        const group = groups[draggingGroup];
+        const centerX = group.reduce((sum, p) => sum + p.canvasX + p.width / 2, 0) / group.length;
+        const centerY = group.reduce((sum, p) => sum + p.canvasY + p.height / 2, 0) / group.length;
+
+        const sin = Math.sin(deltaAngle);
+        const cos = Math.cos(deltaAngle);
+
+        group.forEach(p => {
+          const x = p.canvasX + p.width / 2 - centerX;
+          const y = p.canvasY + p.height / 2 - centerY;
+
+          const rx = x * cos - y * sin;
+          const ry = x * sin + y * cos;
+
+          p.canvasX = centerX + rx - p.width / 2;
+          p.canvasY = centerY + ry - p.height / 2;
+        });
+
+        pinch.startAngle = currentAngle; // atualiza para próxima rodada
+        drawAll();
+      }
+
 
       // Manter o ponto do mundo sob o centro do gesto
       // s = screen = world * scale + view
@@ -330,6 +366,10 @@
 
       drawAll();
     }
+  }
+
+  function angleBetween(p0, p1) {
+    return Math.atan2(p1.y - p0.y, p1.x - p0.x); // ângulo em radianos
   }
 
   canvas.addEventListener("pointerdown", (e) => {

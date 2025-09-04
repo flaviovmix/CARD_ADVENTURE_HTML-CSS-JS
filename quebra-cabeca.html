@@ -1,70 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quebra-Cabeça</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f3f3f3;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quebra-Cabeça</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f3f3f3;
+    }
 
-        canvas {
-            border: 2px solid #333;
-        }
+    canvas {
+      border: 2px solid #333;
+    }
 
-        #game-container {
-            position: relative;
-        }
+    #game-container {
+      position: relative;
+    }
 
-        .piece {
-            position: absolute;
-            cursor: grab;
-        }
+    .game-controls {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 1000;
+      display: flex;
+      gap: 8px;
+    }
 
-      .game-controls {
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        z-index: 1000;
-        display: flex;
-        gap: 8px;
-      }
+    .game-controls button {
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
 
-      .game-controls button {
-        background: rgba(0,0,0,0.6);
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        padding: 6px 12px;
-        font-size: 14px;
-        cursor: pointer;
-      }
-
-      .game-controls button:hover {
-        background: rgba(0,0,0,0.8);
-      }
-
-    </style>
+    .game-controls button:hover {
+      background: rgba(0,0,0,0.8);
+    }
+  </style>
 </head>
 
 <body>
-<div class="game-controls">
-  <button id="btn-back">⬅ Voltar</button>
-  <button id="btn-refresh">⟳ Atualizar</button>
-</div>
+  <div class="game-controls">
+    <button id="btn-back">⬅ Voltar</button>
+    <button id="btn-refresh">⟳ Atualizar</button>
+    <button id="btn-rotate">🔁 Rotacionar</button>
+  </div>
 
-<div id="game-container" data-img="personagem2.png">
-  <canvas id="puzzleCanvas" style="touch-action:none"></canvas>
-</div>
+  <div id="game-container" data-img="personagem2.png">
+    <canvas id="puzzleCanvas" style="touch-action:none"></canvas>
+  </div>
 
-    <script src="./assets/js/scriptJogo.js" ></script>
+  <script src="./assets/js/scriptJogo.js"></script>
 </body>
 
 </html>

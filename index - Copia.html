@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Novo Card</title>
+    
+        <link rel="stylesheet" href="./assets/css/card/card.css">
+        <link rel="stylesheet" href="./assets/css/card/area-info-personagem.css">
+        <link rel="stylesheet" href="./assets/css/card/normalize.css">
+        <link rel="stylesheet" href="./assets/css/card/responsividade.css">
+    </head>
+<body>
+    <main>
+        <div class="container-xl">
+
+            <script>
+              let personagens = [
+                    {
+                        nome: "PRINCESA PEACH",
+                        bandeira: "japao",
+                        altura: "1.73 m",
+                        busto: "87 cm",
+                        cintura: "61 cm",
+                        quadril: "89 cm",
+                        idade: "24 anos",
+                        peso: "52 kg",
+                        hobbie: "Jardinagem e culinária",
+                        origen: "Super Mario Bros",
+                        habilidade: "Flutuar no ar com seu vestido",
+                        obs: "Carismática e corajosa, mas não subestime sua força.",
+                        numFotos: '5'
+                    },
+
+                    {
+                        nome: "CHUN-LI",
+                        bandeira: "china",
+                        altura: "1.70 m",
+                        busto: "88 cm",
+                        cintura: "60 cm",
+                        quadril: "90 cm",
+                        idade: "26 anos",
+                        peso: "58 kg",
+                        hobbie: "Artes marciais",
+                        origen: "Street Fighter",
+                        habilidade: "Chutes poderosas",
+                        obs: "Primeira protagonista feminina dos games de luta.",
+                        numFotos: '4'
+                    },
+                    {
+                        nome: "HINATA",
+                        bandeira: "japao",
+                        altura: "1.60 m",
+                        busto: "83 cm",
+                        cintura: "58 cm",
+                        quadril: "86 cm",
+                        idade: "16 anos",
+                        peso: "45 kg",
+                        hobbie: "Treinar taijutsu",
+                        origen: "Naruto",
+                        habilidade: "Byakugan",
+                        obs: "Tímida, mas determinada.",
+                        numFotos: '4'
+                    },
+                ]
+                for (let i = 0; i < personagens.length; i++) {
+                    let p = personagens[i];
+                    document.write(`
+
+                    <div class="card">
+
+                        <div class="menu-bolinha btnMenuBolinhaCard amostra">
+                            <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="349.569px" height="349.569px"
+                                viewBox="0 0 349.569 349.569" style="enable-background:new 0 0 349.569 349.569;"
+                                xml:space="preserve">
+                                <g>
+                                    <g>
+                                        <circle cx="39.081" cy="54.785" r="39.081" />
+                                        <circle cx="39.081" cy="174.785" r="39.081" />
+                                        <circle cx="39.081" cy="294.785" r="39.081" />
+                                        <g>
+                                            <path d="M344.569,20.535H113.581c-2.757,0-5,2.243-5,5v58.5c0,2.757,2.243,5,5,5h230.988c2.757,0,5-2.243,5-5v-58.5
+                                            C349.569,22.778,347.326,20.535,344.569,20.535z" />
+                                            <path d="M344.569,140.535H113.581c-2.757,0-5,2.243-5,5v58.5c0,2.757,2.243,5,5,5h230.988c2.757,0,5-2.243,5-5v-58.5
+                                            C349.569,142.778,347.326,140.535,344.569,140.535z" />
+                                            <path d="M344.569,260.535H113.581c-2.757,0-5,2.243-5,5v58.5c0,2.757,2.243,5,5,5h230.988c2.757,0,5-2.243,5-5v-58.5
+                                            C349.569,262.778,347.326,260.535,344.569,260.535z" />
+                                        </g>
+                                    </g>
+                                </g>
+                            </svg>
+                        </div>
+
+                        <div class="conteudo-card">
+                            <div class="area-info-personagem" id="areaInfoPersonagem">
+                                <div class="cabecalho">
+                                    <img class="bandeira" src="./assets/pixel_ai/${p.bandeira}.png" alt="">
+                                    <div class="are-face">
+                                        <img class="face" src="./assets/pixel_ai/${p.nome}/img.png" alt="">
+                                    </div>
+                                        
+                                    <div class="classificacao">
+                                        <a href="#"><img src="./assets/pixel_ai/ESTRELA_1-4.png" alt=""></a>
+                                        <a href="#"><img src="./assets/pixel_ai/ESTRELA_1-4.png" alt=""></a>
+                                        <a href="#"><img src="./assets/pixel_ai/ESTRELA_1-4.png" alt=""></a>
+                                        <a href="#"><img src="./assets/pixel_ai/ESTRELA_1-4.png" alt=""></a>
+                                        <a href="#"><img src="./assets/pixel_ai/ESTRELA_5.png" alt=""></a>
+                                    </div>
+                                </div>
+                                <div class="tabela">
+                                    <table>
+                                        <tbody>
+                                          <tr><td class="chave"><strong>Origen:</strong></td><td>${p.origen}</td></tr>
+                                        <tr><td class="chave"><strong>Altura:</strong></td><td>${p.altura}</td></tr>
+                                        <tr><td class="chave"><strong>Busto:</strong></td><td>${p.busto}</td></tr>
+                                        <tr><td class="chave"><strong>Cintura:</strong></td><td>${p.cintura}</td></tr>
+                                        <tr><td class="chave"><strong>Quadril:</strong></td><td>${p.quadril}</td></tr>
+                                        <tr><td class="chave"><strong>idade:</strong></td><td>${p.idade}</td></tr>
+                                        <tr><td class="chave"><strong>Peso:</strong></td><td>${p.peso}</td></tr>
+                                        <tr><td class="chave"><strong>Hobbie:</strong></td><td>${p.hobbie}</td></tr>
+                                        <tr><td class="chave"><strong>Habilidade:</strong></td><td>${p.habilidade}</td></tr>
+                                        <tr class="obs"><td colspan="2" class="obs">${p.obs}</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <img class="img-principal" src="./assets/pixel_ai/${p.nome}/img.png" alt="imagem da personagem" />
+                            <div class="area-titulo-da-fase mostrar" id="area-titulo-da-fase">
+                                <span id="areaTituloTexto">${p.nome}</span>
+                            </div>
+                        </div>
+
+                        <div class="area-link-fases">
+                            
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('TRAJES NORMAIS')}&numFotos=${encodeURIComponent(p.numFotos)}" data-titulo="TRAJES NORMAIS">
+                              <img class="icone" src="./assets/pixel_ai/emoje-1.png" />
+                            </a>
+
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('PISCINA')}&numFotos=${encodeURIComponent(p.numFotos)}" data-titulo="PISCINA">
+                              <img class="icone" src="./assets/pixel_ai/emoje-2.png" />
+                            </a>
+
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('LENDO')}&numFotos=${encodeURIComponent(p.numFotos)}" data-titulo="LENDO">
+                              <img class="icone" src="./assets/pixel_ai/emoje-3.png" />
+                            </a>
+
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('DORMINDO')}&numFotos=${encodeURIComponent(p.numFotos)}" data-titulo="DORMINDO">
+                              <img class="icone" src="./assets/pixel_ai/emoje-4.png" />
+                            </a>
+
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('BANHO')}&numFotos=${encodeURIComponent(p.numFotos)}" data-titulo="BANHO">
+                              <img class="icone" src="./assets/pixel_ai/emoje-5.png" />
+                            </a>
+
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('NUA')}&numFotos=${encodeURIComponent(p.numFotos)}" data-titulo="NUA">
+                              <img class="icone" src="./assets/pixel_ai/emoje-6.png" />
+                            </a>
+
+                        </div>    
+
+                    </div>                
+                    `);
+                }
+            </script>
+        </div>
+    </main>
+    <!-- <a href="./assets/pixel_ai/VIDEL/quebra-cabeça.html?img=TRAJES NORMAIS.png" data-titulo="TRAJES NORMAIS"><img class="icone" src="./assets/pixel_ai/emoje-1.png" /></a> -->
+    <script src="./assets/js/card/mostrarAreaInfoPersonagem.js"></script>
+    <script src="./assets/js/card/alterarNomeFaseNomePersonagem.js"></script>
+    <script src="./assets/js/card/mostrarMenuLateralCard.js"></script>
+
+</body>
+</html>

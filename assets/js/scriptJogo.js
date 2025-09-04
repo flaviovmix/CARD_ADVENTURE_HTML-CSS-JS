@@ -1,39 +1,67 @@
-// script.js
+// script.js (com pinch-to-zoom + pan)
 (function () {
-  // ======= CONFIG BÁSICA =======
+  // ======= BASE =======
   const canvas = document.getElementById("puzzleCanvas");
   const ctx = canvas.getContext("2d");
   const container = document.getElementById("game-container");
 
-  // ======= GRID =======
-  const rows = 2;  // linhas
-  const cols = 2;  // colunas
+  // Alta nitidez em telas high-DPI (desenhamos em unidades CSS)
+  function fitCanvasToWindow() {
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = window.innerWidth;
+    const cssH = window.innerHeight;
+    canvas.style.width = cssW + "px";
+    canvas.style.height = cssH + "px";
+    canvas.width = Math.floor(cssW * dpr);
+    canvas.height = Math.floor(cssH * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // desenha em coordenadas CSS
+  }
 
-  // ======= VARS DINÂMICAS (preenchidas depois) =======
-  let imageWidth = 0, imageHeight = 0;     // tamanho REAL da imagem
-  let displayW = 0, displayH = 0;          // tamanho ESCALADO (cabe no canvas)
-  let srcPieceW = 0, srcPieceH = 0;        // tamanho do recorte por peça (na imagem real)
-  let pieceWidth = 0, pieceHeight = 0;     // tamanho da peça desenhada no canvas
-  let offsetXTarget = 0, offsetYTarget = 0;// canto sup-esq do "quadro" de montagem
-  let scale = 1;
+  // ======= GRID =======
+  const rows = 4;
+  const cols = 3;
+
+  // ======= VARS DINÂMICAS =======
+  let imageWidth = 0, imageHeight = 0;     // real
+  let displayW = 0, displayH = 0;          // escalado p/ caber
+  let srcPieceW = 0, srcPieceH = 0;        // recorte por peça (src)
+  let pieceWidth = 0, pieceHeight = 0;     // peça no canvas (display)
+  let offsetXTarget = 0, offsetYTarget = 0;// posição do quadro montado
+  let scale = 1;                           // escala imagem->display
 
   const SNAP = 30;
 
-  // ======= CANVAS FULLSCREEN + RESIZE =======
-  function resizeCanvas() {
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
+  // ======= VIEWPORT (zoom/pan da câmera) =======
+  let viewScale = 1;       // zoom da "câmera"
+  let viewX = 0, viewY = 0;// pan da "câmera"
 
-    // se a imagem já carregou, recomputa layout e preserva posições
+  function applyViewTransform() {
+    ctx.save();
+    ctx.translate(viewX, viewY);
+    ctx.scale(viewScale, viewScale);
+  }
+  function restoreViewTransform() {
+    ctx.restore();
+  }
+  function screenToWorld(x, y) {
+    return { x: (x - viewX) / viewScale, y: (y - viewY) / viewScale };
+  }
+  function worldToScreen(x, y) {
+    return { x: x * viewScale + viewX, y: y * viewScale + viewY };
+  }
+
+  // ======= FULLSCREEN + RESIZE =======
+  function resizeCanvas() {
+    fitCanvasToWindow();
     if (imageWidth && imageHeight) {
       computeLayout(true);
-      // atualiza o tamanho "display" das peças existentes
       pieces.forEach(p => { p.width = pieceWidth; p.height = pieceHeight; });
       drawAll();
     }
   }
   window.addEventListener("resize", resizeCanvas);
-  resizeCanvas(); // inicializa
+  window.addEventListener("orientationchange", resizeCanvas);
+  resizeCanvas();
 
   // ======= PARAMS =======
   const params = new URLSearchParams(window.location.search);
@@ -54,7 +82,6 @@
       return `${baseFolder}/${randomNum}.png`;
     }
     if (dataImg) {
-      // Se vier caminho completo, usa direto; senão, prefixa a pasta padrão
       if (dataImg.includes("/")) return dataImg;
       return `./assets/pixel_ai/${dataImg}`;
     }
@@ -76,11 +103,9 @@
       this.row = row;
       this.col = col;
 
-      // recorte na imagem ORIGINAL (SRC)
       this.srcX = col * srcPieceW;
       this.srcY = row * srcPieceH;
 
-      // posição e tamanho no CANVAS (DISPLAY)
       this.canvasX = startX;
       this.canvasY = startY;
       this.width   = pieceWidth;
@@ -93,10 +118,10 @@
     draw() {
       ctx.drawImage(
         image,
-        this.srcX, this.srcY,      // origem (src)
-        srcPieceW, srcPieceH,      // tamanho do recorte (src)
-        this.canvasX, this.canvasY,// destino (canvas)
-        this.width, this.height    // tamanho no canvas (display)
+        this.srcX, this.srcY,
+        srcPieceW, srcPieceH,
+        this.canvasX, this.canvasY,
+        this.width, this.height
       );
     }
 
@@ -130,22 +155,19 @@
     groups.push([piece]);
   }
 
-  // Move TODO o grupo A para colar no grupo B (âncora é otherPiece — grupo parado)
+  // Move grupo A (arrastado) para colar no grupo B (parado)
   function mergeGroups(groupA, groupB, anchorPiece, otherPiece) {
     if (groupA === groupB) return;
 
-    // deslocamento necessário para que anchorPiece alinhe com otherPiece
     const dx = (otherPiece.canvasX + (anchorPiece.col - otherPiece.col) * pieceWidth) - anchorPiece.canvasX;
     const dy = (otherPiece.canvasY + (anchorPiece.row - otherPiece.row) * pieceHeight) - anchorPiece.canvasY;
 
-    // aplica o deslocamento em todo o grupo A (o grupo que estava sendo arrastado)
     groups[groupA].forEach(p => {
       p.canvasX += dx;
       p.canvasY += dy;
       p.groupId = groupB;
     });
 
-    // funde no grupo B e esvazia o A
     groups[groupB] = groups[groupB].concat(groups[groupA]);
     groups[groupA] = [];
   }
@@ -157,7 +179,6 @@
     });
   }
 
-  // ======= SNAP ENTRE PEÇAS =======
   function trySnap(piece) {
     for (let other of pieces) {
       if (piece === other || other.locked) continue;
@@ -168,7 +189,6 @@
 
       if (!isNeighbor) continue;
 
-      // diferença de col/row convertida para pixels "display"
       const dx = (other.col - piece.col) * pieceWidth;
       const dy = (other.row - piece.row) * pieceHeight;
 
@@ -176,7 +196,6 @@
         Math.abs((piece.canvasX + dx) - other.canvasX) < SNAP &&
         Math.abs((piece.canvasY + dy) - other.canvasY) < SNAP
       ) {
-        // Alinha o grupo arrastado (groupA = piece.groupId) ao grupo parado (groupB = other.groupId)
         mergeGroups(piece.groupId, other.groupId, piece, other);
       }
     }
@@ -185,49 +204,50 @@
   // ======= DRAW =======
   function drawAll() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // área-alvo onde o quebra-cabeça "montado" ficaria
+
+    applyViewTransform();
+    // área-alvo (quadro montado)
     ctx.fillStyle = "rgba(0,0,0,0.08)";
     ctx.fillRect(offsetXTarget, offsetYTarget, displayW, displayH);
+
     pieces.forEach(p => p.draw());
+    restoreViewTransform();
   }
 
   function checkCompleted() {
     return pieces.every(p => p.isInCorrectPosition());
   }
 
-  // ======= LAYOUT DINÂMICO =======
+  // ======= LAYOUT (preenche tela; permite upscale) =======
   function computeLayout(preservePositions = false) {
     const margin = 20;
-    const maxW = canvas.width  - margin * 2;
-    const maxH = canvas.height - margin * 2;
+    // usar tamanho CSS do canvas com a câmera em 1:1
+    const maxW = canvas.clientWidth  - margin * 2;
+    const maxH = canvas.clientHeight - margin * 2;
 
     const prevOffsetX = offsetXTarget;
     const prevOffsetY = offsetYTarget;
     const prevPieceW  = pieceWidth  || 1;
     const prevPieceH  = pieceHeight || 1;
 
-    // escala para caber no canvas, sem ampliar acima do original
+    // Sem ", 1" => upscaling para imagens menores
     scale = Math.min(maxW / imageWidth, maxH / imageHeight);
 
     displayW = Math.floor(imageWidth  * scale);
     displayH = Math.floor(imageHeight * scale);
 
-    // recorte no SRC (tamanho real), nunca muda com a escala
     srcPieceW = imageWidth  / cols;
     srcPieceH = imageHeight / rows;
 
-    // tamanho da peça NO CANVAS (display)
     pieceWidth  = displayW / cols;
     pieceHeight = displayH / rows;
 
-    // centraliza a área-alvo
-    offsetXTarget = Math.floor((canvas.width  - displayW) / 2);
-    offsetYTarget = Math.floor((canvas.height - displayH) / 2);
+    offsetXTarget = Math.floor((canvas.clientWidth  - displayW) / 2);
+    offsetYTarget = Math.floor((canvas.clientHeight - displayH) / 2);
 
-    // preserva posições proporcionais quando redimensionar
     if (preservePositions && pieces.length) {
       pieces.forEach(p => {
-        const relX = (p.canvasX - prevOffsetX) / prevPieceW; // em "unidades de peça"
+        const relX = (p.canvasX - prevOffsetX) / prevPieceW;
         const relY = (p.canvasY - prevOffsetY) / prevPieceH;
         p.canvasX = offsetXTarget + relX * pieceWidth;
         p.canvasY = offsetYTarget + relY * pieceHeight;
@@ -240,14 +260,12 @@
     imageWidth  = image.width;
     imageHeight = image.height;
 
-    // calcula escala e dimensões iniciais
     computeLayout(false);
 
-    // cria peças espalhadas
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
-        const startX = Math.random() * (canvas.width  - pieceWidth);
-        const startY = Math.random() * (canvas.height - pieceHeight);
+        const startX = Math.random() * (canvas.clientWidth  - pieceWidth);
+        const startY = Math.random() * (canvas.clientHeight - pieceHeight);
         const piece = new Piece(r, c, startX, startY);
         pieces.push(piece);
         createGroup(piece);
@@ -262,69 +280,165 @@
     alert("Não foi possível carregar a imagem.");
   };
 
-  // ======= INPUT MOUSE =======
-  canvas.addEventListener("mousedown", (e) => {
+  // ======= INPUT (Pointer Events: mouse + touch) =======
+  let activePointerId = null;
+  const pointers = new Map(); // id -> {x,y}
+  let pinch = null; // estado do gesto: {startDist, startScale, startMid, worldCenter}
+
+  function getPos(e) {
     const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
 
-    for (let i = pieces.length - 1; i >= 0; i--) {
-      if (pieces[i].isClicked(mouseX, mouseY)) {
-        draggingGroup = pieces[i].groupId;
+  function updatePinchState() {
+    if (pointers.size < 2) { pinch = null; return; }
+    const pts = Array.from(pointers.values());
+    const p0 = pts[0], p1 = pts[1];
 
-        const groupPieces = groups[draggingGroup];
-        const minX = Math.min(...groupPieces.map(p => p.canvasX));
-        const minY = Math.min(...groupPieces.map(p => p.canvasY));
+    const mid = { x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2 };
+    const dx = p1.x - p0.x, dy = p1.y - p0.y;
+    const dist = Math.hypot(dx, dy);
 
-        groupOffsetX = mouseX - minX;
-        groupOffsetY = mouseY - minY;
+    if (!pinch) {
+      // novo gesto
+      pinch = {
+        startDist: dist || 1,
+        startScale: viewScale,
+        startMid: mid,
+        worldCenter: screenToWorld(mid.x, mid.y)
+      };
+    } else {
+      // pan com dois dedos: move a view pelo deslocamento do mid
+      const dMidX = mid.x - pinch.startMid.x;
+      const dMidY = mid.y - pinch.startMid.y;
 
-        // === TRAZER O GRUPO PRA FRENTE (desenhar por último) ===
-        groupPieces.forEach(p => {
-          const idx = pieces.indexOf(p);
-          if (idx !== -1) {
-            pieces.splice(idx, 1);
-            pieces.push(p);
-          }
-        });
+      // Zoom relativo
+      const newScale = Math.max(0.2, Math.min(5, pinch.startScale * (dist / pinch.startDist || 1)));
 
-        drawAll();
-        break;
-      }
+      // Manter o ponto do mundo sob o centro do gesto
+      // s = screen = world * scale + view
+      // Queremos: worldCenter desenhado em mid => view = mid - worldCenter*scale
+      viewScale = newScale;
+      const targetView = {
+        x: mid.x - pinch.worldCenter.x * viewScale,
+        y: mid.y - pinch.worldCenter.y * viewScale
+      };
+
+      // Acrescenta o pan do mid (para arrastar o quadro durante o pinch)
+      viewX = targetView.x;
+      viewY = targetView.y;
+
+      drawAll();
     }
-  });
+  }
 
-  canvas.addEventListener("mousemove", (e) => {
-    if (draggingGroup === null) return;
+  canvas.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    const pos = getPos(e);
+    pointers.set(e.pointerId, pos);
 
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+    if (pointers.size === 1) {
+      // arrasto de peças
+      activePointerId = e.pointerId;
+      canvas.setPointerCapture(e.pointerId);
+
+      const world = screenToWorld(pos.x, pos.y);
+      for (let i = pieces.length - 1; i >= 0; i--) {
+        if (pieces[i].isClicked(world.x, world.y)) {
+          draggingGroup = pieces[i].groupId;
+
+          const groupPieces = groups[draggingGroup];
+          const minX = Math.min(...groupPieces.map(p => p.canvasX));
+          const minY = Math.min(...groupPieces.map(p => p.canvasY));
+
+          groupOffsetX = world.x - minX;
+          groupOffsetY = world.y - minY;
+
+          // trazer pra frente
+          groupPieces.forEach(p => {
+            const idx = pieces.indexOf(p);
+            if (idx !== -1) { pieces.splice(idx, 1); pieces.push(p); }
+          });
+          drawAll();
+          break;
+        }
+      }
+    } else if (pointers.size === 2) {
+      // inicia pinch
+      updatePinchState();
+      // enquanto pinch ativo, não arrastamos peças
+      draggingGroup = null;
+      activePointerId = null;
+    }
+  }, { passive: false });
+
+  canvas.addEventListener("pointermove", (e) => {
+    e.preventDefault();
+    const pos = getPos(e);
+    if (pointers.has(e.pointerId)) {
+      pointers.set(e.pointerId, pos);
+    }
+
+    if (pointers.size >= 2) {
+      updatePinchState();
+      return;
+    }
+
+    if (draggingGroup === null || activePointerId !== e.pointerId) return;
+
+    const world = screenToWorld(pos.x, pos.y);
 
     const groupPieces = groups[draggingGroup];
     const minX = Math.min(...groupPieces.map(p => p.canvasX));
     const minY = Math.min(...groupPieces.map(p => p.canvasY));
 
-    const dx = mouseX - groupOffsetX - minX;
-    const dy = mouseY - groupOffsetY - minY;
+    const dx = world.x - groupOffsetX - minX;
+    const dy = world.y - groupOffsetY - minY;
 
     moveGroup(draggingGroup, dx, dy);
     drawAll();
-  });
+  }, { passive: false });
 
-  canvas.addEventListener("mouseup", () => {
-    if (draggingGroup === null) return;
+  function endPointer(e) {
+    if (pointers.has(e.pointerId)) pointers.delete(e.pointerId);
 
-    groups[draggingGroup].forEach(p => trySnap(p));
-    drawAll();
+    if (pointers.size < 2) pinch = null;
 
-    if (checkCompleted()) {
-      setTimeout(() => {
-        alert("Parabéns! Quebra-cabeça concluído!");
-        location.reload();
-      }, 10);
+    if (activePointerId === e.pointerId) {
+      if (draggingGroup !== null) {
+        groups[draggingGroup].forEach(p => trySnap(p));
+        drawAll();
+
+        if (checkCompleted()) {
+          setTimeout(() => {
+            alert("Parabéns! Quebra-cabeça concluído!");
+            location.reload();
+          }, 10);
+        }
+      }
+      draggingGroup = null;
+      activePointerId = null;
+      canvas.releasePointerCapture(e.pointerId);
     }
+  }
+  canvas.addEventListener("pointerup", endPointer, { passive: false });
+  canvas.addEventListener("pointercancel", endPointer, { passive: false });
 
-    draggingGroup = null;
-  });
+  // ======= ZOOM POR RODA DO MOUSE (desktop) =======
+  canvas.addEventListener("wheel", (e) => {
+    // Ctrl+roda ou roda simples — ajusta zoom
+    e.preventDefault();
+    const pos = getPos(e);
+    const world = screenToWorld(pos.x, pos.y);
+
+    const factor = Math.exp((e.deltaY > 0 ? -1 : 1) * 0.1); // suave
+    const newScale = Math.max(0.2, Math.min(5, viewScale * factor));
+
+    // mantém o ponto do mundo sob o cursor
+    viewX = pos.x - world.x * newScale;
+    viewY = pos.y - world.y * newScale;
+    viewScale = newScale;
+
+    drawAll();
+  }, { passive: false });
 })();

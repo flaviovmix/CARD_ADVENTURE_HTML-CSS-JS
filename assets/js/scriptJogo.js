@@ -18,8 +18,8 @@
   }
 
   // ======= GRID =======
-  const rows = 4;
-  const cols = 3;
+  const rows = 2;
+  const cols = 2;
 
   // ======= VARS DINÂMICAS =======
   let imageWidth = 0, imageHeight = 0;     // real
@@ -442,3 +442,11 @@
     drawAll();
   }, { passive: false });
 })();
+
+document.getElementById("btn-back").addEventListener("click", () => {
+  history.back(); // voltar para a página anterior
+});
+
+document.getElementById("btn-refresh").addEventListener("click", () => {
+  location.reload(); // recarregar a página
+});

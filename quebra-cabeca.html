@@ -27,10 +27,39 @@
             position: absolute;
             cursor: grab;
         }
+
+      .game-controls {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 1000;
+        display: flex;
+        gap: 8px;
+      }
+
+      .game-controls button {
+        background: rgba(0,0,0,0.6);
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+
+      .game-controls button:hover {
+        background: rgba(0,0,0,0.8);
+      }
+
     </style>
 </head>
 
 <body>
+<div class="game-controls">
+  <button id="btn-back">⬅ Voltar</button>
+  <button id="btn-refresh">⟳ Atualizar</button>
+</div>
+
 <div id="game-container" data-img="personagem2.png">
   <canvas id="puzzleCanvas" style="touch-action:none"></canvas>
 </div>

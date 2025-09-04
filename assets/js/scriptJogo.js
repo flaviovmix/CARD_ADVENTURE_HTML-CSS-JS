@@ -106,24 +106,24 @@
     groups.push([piece]);
   }
 
-  function mergeGroups(groupA, groupB, anchorPiece, otherPiece) {
-    if (groupA === groupB) return;
+function mergeGroups(groupA, groupB, anchorPiece, otherPiece) {
+  if (groupA === groupB) return;
 
-    // diferença entre onde o "otherPiece" está e onde deveria estar
-    const dx = (anchorPiece.canvasX + (otherPiece.col - anchorPiece.col) * pieceWidth) - otherPiece.canvasX;
-    const dy = (anchorPiece.canvasY + (otherPiece.row - anchorPiece.row) * pieceHeight) - otherPiece.canvasY;
+  // diferença entre onde o anchorPiece deveria estar (em relação ao otherPiece)
+  const dx = (otherPiece.canvasX + (anchorPiece.col - otherPiece.col) * pieceWidth) - anchorPiece.canvasX;
+  const dy = (otherPiece.canvasY + (anchorPiece.row - otherPiece.row) * pieceHeight) - anchorPiece.canvasY;
 
-    // aplicar o deslocamento em todo o grupo B
-    groups[groupB].forEach(p => {
-      p.canvasX += dx;
-      p.canvasY += dy;
-      p.groupId = groupA;
-    });
+  // aplicar o deslocamento em todo o grupo A (quem está se aproximando)
+  groups[groupA].forEach(p => {
+    p.canvasX += dx;
+    p.canvasY += dy;
+    p.groupId = groupB;
+  });
 
-    // fundir grupos
-    groups[groupA] = groups[groupA].concat(groups[groupB]);
-    groups[groupB] = [];
-  }
+  // fundir grupos
+  groups[groupB] = groups[groupB].concat(groups[groupA]);
+  groups[groupA] = [];
+}
 
   function moveGroup(groupId, dx, dy) {
     groups[groupId].forEach(p => {
@@ -187,27 +187,37 @@
   };
 
   // ======= INPUT MOUSE =======
-  canvas.addEventListener("mousedown", (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+canvas.addEventListener("mousedown", (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
 
-    for (let i = pieces.length - 1; i >= 0; i--) {
-      if (pieces[i].isClicked(mouseX, mouseY)) {
-        draggingGroup = pieces[i].groupId;
+  for (let i = pieces.length - 1; i >= 0; i--) {
+    if (pieces[i].isClicked(mouseX, mouseY)) {
+      draggingGroup = pieces[i].groupId;
 
-        // calcular offset em relação ao grupo inteiro (mínimo X e Y do grupo)
-        const groupPieces = groups[draggingGroup];
-        const minX = Math.min(...groupPieces.map(p => p.canvasX));
-        const minY = Math.min(...groupPieces.map(p => p.canvasY));
+      const groupPieces = groups[draggingGroup];
+      const minX = Math.min(...groupPieces.map(p => p.canvasX));
+      const minY = Math.min(...groupPieces.map(p => p.canvasY));
 
-        groupOffsetX = mouseX - minX;
-        groupOffsetY = mouseY - minY;
+      groupOffsetX = mouseX - minX;
+      groupOffsetY = mouseY - minY;
 
-        break;
-      }
+      // === TRÁS PRA FRENTE ===
+      groupPieces.forEach(p => {
+        const idx = pieces.indexOf(p);
+        if (idx !== -1) {
+          pieces.splice(idx, 1);
+          pieces.push(p);
+        }
+      });
+
+      drawAll(); // redesenha já na frente
+      break;
     }
-  });
+  }
+});
+
 
   canvas.addEventListener("mousemove", (e) => {
     if (draggingGroup === null) return;

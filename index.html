@@ -15,6 +15,16 @@
         <div class="container-xl">
 
             <script>
+
+                let config = {
+                    CASUAL:  { linha: "3", coluna: "3" },
+                    LEVE:    { linha: "4", coluna: "4" },
+                    SECRETS: { linha: "5", coluna: "5" },
+                    FETICHE: { linha: "6", coluna: "6" },
+                    PECADO:  { linha: "7", coluna: "7" },
+                    LIVRE:   { linha: "8", coluna: "8" }
+                };
+
               let personagens = [
                     {
                         nome: "PRINCESA PEACH",
@@ -147,30 +157,31 @@
                         </div>
 
                         <div class="area-link-fases">
-                            
-                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('1_CASUAL')}&numFotos=${encodeURIComponent(p.numFotos)}" data-titulo="CASUAL">
-                              <img class="icone" src="./assets/pixel_ai/emoje-1.png" />
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('1_CASUAL')}&numFotos=${encodeURIComponent(p.numFotos)}&linha=${encodeURIComponent(config.CASUAL.linha)}&coluna=${encodeURIComponent(config.CASUAL.coluna)}&aleatoria=0" data-titulo="CASUAL">
+                            <img class="icone" src="./assets/pixel_ai/emoje-1.png" />
                             </a>
 
-                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('2_LEVE')}&numFotos=${encodeURIComponent(p.numFotos)}" data-titulo="LEVE">
-                              <img class="icone" src="./assets/pixel_ai/emoje-2.png" />
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('2_LEVE')}&numFotos=${encodeURIComponent(p.numFotos)}&linha=${encodeURIComponent(config.LEVE.linha)}&coluna=${encodeURIComponent(config.LEVE.coluna)}&aleatoria=0" data-titulo="LEVE">
+                            <img class="icone" src="./assets/pixel_ai/emoje-2.png" />
                             </a>
 
-                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('3_SECRETS')}&numFotos=${encodeURIComponent(p.numFotos)}" data-titulo="SECRETS">
-                              <img class="icone" src="./assets/pixel_ai/emoje-3.png" />
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('3_SECRETS')}&numFotos=${encodeURIComponent(p.numFotos)}&linha=${encodeURIComponent(config.SECRETS.linha)}&coluna=${encodeURIComponent(config.SECRETS.coluna)}&aleatoria=0" data-titulo="SECRETS">
+                            <img class="icone" src="./assets/pixel_ai/emoje-3.png" />
                             </a>
 
-                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('4_FETICHE')}&numFotos=${encodeURIComponent(p.numFotos)}" data-titulo="FETICHE">
-                              <img class="icone" src="./assets/pixel_ai/emoje-4.png" />
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('4_FETICHE')}&numFotos=${encodeURIComponent(p.numFotos)}&linha=${encodeURIComponent(config.FETICHE.linha)}&coluna=${encodeURIComponent(config.FETICHE.coluna)}&aleatoria=0" data-titulo="FETICHE">
+                            <img class="icone" src="./assets/pixel_ai/emoje-4.png" />
                             </a>
 
-                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('5_PECADO')}&numFotos=${encodeURIComponent(p.numFotos)}" data-titulo="PECADO">
-                              <img class="icone" src="./assets/pixel_ai/emoje-5.png" />
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('5_PECADO')}&numFotos=${encodeURIComponent(p.numFotos)}&linha=${encodeURIComponent(config.PECADO.linha)}&coluna=${encodeURIComponent(config.PECADO.coluna)}&aleatoria=0" data-titulo="PECADO">
+                            <img class="icone" src="./assets/pixel_ai/emoje-5.png" />
                             </a>
 
-                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('6_LIVRE')}&numFotos=${encodeURIComponent(p.numFotos)}" data-titulo="LIVRE">
-                              <img class="icone" src="./assets/pixel_ai/emoje-6.png" />
+                            <a href="./quebra-cabeca.html?nome=${encodeURIComponent(p.nome)}&fase=${encodeURIComponent('6_LIVRE')}&numFotos=${encodeURIComponent(p.numFotos)}&linha=${encodeURIComponent(config.LIVRE.linha)}&coluna=${encodeURIComponent(config.LIVRE.coluna)}&aleatoria=0" data-titulo="LIVRE">
+                            <img class="icone" src="./assets/pixel_ai/emoje-6.png" />
                             </a>
+
+
 
                         </div>    
 

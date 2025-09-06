@@ -18,8 +18,8 @@
   }
 
   // ======= GRID =======
-  const rows = 3;
-  const cols = 3;
+  const rows = 6;
+  const cols = 5;
 
   // ======= VARS DINÂMICAS =======
   let imageWidth = 0, imageHeight = 0;     // real

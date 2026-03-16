@@ -112,6 +112,10 @@
   // ── PEÇA ────────────────────────────────────────────────────────────────────
   let pieces = [], groups = [];
   let draggingGroup = null, grpOffX = 0, grpOffY = 0;
+  let panning = false, panStartX = 0, panStartY = 0, panStartVx = 0, panStartVy = 0;
+  let isSelecting = false, selStart = null, selEnd = null;
+  let selectedPieces = new Set();
+  let selDragging = false, selDragLastX = 0, selDragLastY = 0;
 
   class Piece {
     constructor(row, col) {
@@ -143,8 +147,8 @@
 
       // contorno da peça (borda jigsaw visível)
       buildPath(x, y, pW, pH, tc, rc, bc, lc);
-      ctx.strokeStyle = "rgba(0,0,0,0.45)";
-      ctx.lineWidth   = 1.2;
+      ctx.strokeStyle = selectedPieces.has(this) ? "rgba(80,160,255,0.95)" : "rgba(0,0,0,0.45)";
+      ctx.lineWidth   = selectedPieces.has(this) ? 2.5 / vs : 1.2;
       ctx.stroke();
     }
 
@@ -210,6 +214,19 @@
     ctx.globalAlpha = 1;
 
     pieces.forEach(p => p.draw());
+
+    // retângulo de seleção (rubber band)
+    if (isSelecting && selStart && selEnd) {
+      const rx = Math.min(selStart.x, selEnd.x), ry = Math.min(selStart.y, selEnd.y);
+      const rw = Math.abs(selEnd.x - selStart.x), rh = Math.abs(selEnd.y - selStart.y);
+      ctx.fillStyle   = "rgba(80,160,255,0.08)";
+      ctx.fillRect(rx, ry, rw, rh);
+      ctx.strokeStyle = "rgba(80,160,255,0.85)";
+      ctx.lineWidth   = 1 / vs;
+      ctx.setLineDash([6 / vs, 3 / vs]);
+      ctx.strokeRect(rx, ry, rw, rh);
+      ctx.setLineDash([]);
+    }
 
     restoreView();
   }
@@ -310,6 +327,8 @@
     }
   }
 
+  canvas.addEventListener("contextmenu", e => e.preventDefault());
+
   canvas.addEventListener("pointerdown", e => {
     e.preventDefault();
     const pos = getPos(e);
@@ -318,23 +337,59 @@
     if (pointers.size === 1) {
       activePtr = e.pointerId;
       canvas.setPointerCapture(e.pointerId);
+
+      // ── botão do meio: pan ──────────────────────────────────────────────────
+      if (e.button === 1) {
+        panning = true;
+        panStartX = pos.x; panStartY = pos.y;
+        panStartVx = vx;   panStartVy = vy;
+        return;
+      }
+
       const w = toWorld(pos.x, pos.y);
 
+      // ── botão esquerdo: peça ou rubber-band ─────────────────────────────────
+      let hitPiece = false;
       for (let i = pieces.length - 1; i >= 0; i--) {
         if (!pieces[i].hitTest(w.x, w.y)) continue;
-        draggingGroup = pieces[i].groupId;
-        const grp = groups[draggingGroup];
-        grpOffX = w.x - Math.min(...grp.map(p => p.x));
-        grpOffY = w.y - Math.min(...grp.map(p => p.y));
-        // traz grupo para frente
-        grp.forEach(p => { pieces.splice(pieces.indexOf(p), 1); pieces.push(p); });
+        const clicked = pieces[i];
+
+        if (selectedPieces.has(clicked) && selectedPieces.size > 1) {
+          // arrastar todas as peças selecionadas juntas
+          selDragging  = true;
+          selDragLastX = w.x;
+          selDragLastY = w.y;
+          // traz todas para frente
+          selectedPieces.forEach(sp => { pieces.splice(pieces.indexOf(sp), 1); pieces.push(sp); });
+        } else {
+          // arrastar grupo normal (uma peça ou grupo já montado)
+          selectedPieces.clear();
+          draggingGroup = clicked.groupId;
+          const grp = groups[draggingGroup];
+          grpOffX = w.x - Math.min(...grp.map(p => p.x));
+          grpOffY = w.y - Math.min(...grp.map(p => p.y));
+          grp.forEach(p => { pieces.splice(pieces.indexOf(p), 1); pieces.push(p); });
+        }
+        hitPiece = true;
         drawAll();
         break;
       }
+
+      // ── área vazia: iniciar rubber-band ────────────────────────────────────
+      if (!hitPiece) {
+        selectedPieces.clear();
+        isSelecting = true;
+        selStart = { x: w.x, y: w.y };
+        selEnd   = { x: w.x, y: w.y };
+        drawAll();
+      }
+
     } else if (pointers.size === 2) {
       updatePinch();
       draggingGroup = null;
-      activePtr = null;
+      isSelecting   = false;
+      selDragging   = false;
+      activePtr     = null;
     }
   }, { passive: false });
 
@@ -342,9 +397,33 @@
     e.preventDefault();
     if (pointers.has(e.pointerId)) pointers.set(e.pointerId, getPos(e));
     if (pointers.size >= 2) { updatePinch(); return; }
-    if (draggingGroup === null || activePtr !== e.pointerId) return;
+    if (activePtr !== e.pointerId) return;
 
-    const w   = toWorld(getPos(e).x, getPos(e).y);
+    const curPos = getPos(e);
+    const w = toWorld(curPos.x, curPos.y);
+
+    if (panning) {
+      vx = panStartVx + (curPos.x - panStartX);
+      vy = panStartVy + (curPos.y - panStartY);
+      drawAll();
+      return;
+    }
+
+    if (isSelecting) {
+      selEnd = { x: w.x, y: w.y };
+      drawAll();
+      return;
+    }
+
+    if (selDragging) {
+      const dx = w.x - selDragLastX, dy = w.y - selDragLastY;
+      selectedPieces.forEach(p => { p.x += dx; p.y += dy; });
+      selDragLastX = w.x; selDragLastY = w.y;
+      drawAll();
+      return;
+    }
+
+    if (draggingGroup === null) return;
     const grp = groups[draggingGroup];
     moveGroup(draggingGroup,
       w.x - grpOffX - Math.min(...grp.map(p => p.x)),
@@ -356,6 +435,37 @@
     pointers.delete(e.pointerId);
     if (pointers.size < 2) pinch = null;
     if (activePtr !== e.pointerId) return;
+
+    panning = false;
+
+    // ── finaliza rubber-band: seleciona peças dentro do rect ──────────────────
+    if (isSelecting) {
+      isSelecting = false;
+      const x1 = Math.min(selStart.x, selEnd.x), y1 = Math.min(selStart.y, selEnd.y);
+      const x2 = Math.max(selStart.x, selEnd.x), y2 = Math.max(selStart.y, selEnd.y);
+      if (x2 - x1 > 5 || y2 - y1 > 5) {
+        pieces.forEach(p => {
+          if (p.x < x2 && p.x + pW > x1 && p.y < y2 && p.y + pH > y1)
+            selectedPieces.add(p);
+        });
+      }
+      drawAll();
+      activePtr = null;
+      canvas.releasePointerCapture(e.pointerId);
+      return;
+    }
+
+    // ── finaliza arrastar seleção múltipla ────────────────────────────────────
+    if (selDragging) {
+      selDragging = false;
+      selectedPieces.forEach(p => trySnap(p));
+      drawAll();
+      if (pieces.every(p => p.isCorrect()))
+        setTimeout(() => { alert("Parabéns! Quebra-cabeça concluído!"); location.reload(); }, 10);
+      activePtr = null;
+      canvas.releasePointerCapture(e.pointerId);
+      return;
+    }
 
     if (draggingGroup !== null) {
       groups[draggingGroup].forEach(p => trySnap(p));

@@ -197,6 +197,82 @@
     }
   }
 
+  // ── TELA DE VITÓRIA ──────────────────────────────────────────────────────────
+  function showVictory() {
+    const screen = document.getElementById("victory-screen");
+    const img    = document.getElementById("victory-img");
+    if (!screen || !img) return;
+    img.src = image.src;
+    screen.classList.add("show");
+  }
+
+  // ── PASSEIO CINEMÁTICO ───────────────────────────────────────────────────────
+  let tourActive = false;
+
+  function drawTourFrame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+    applyView();
+    ctx.drawImage(image, ox, oy, dispW, dispH);
+    restoreView();
+  }
+
+  function startCinematicTour() {
+    tourActive = true;
+    selectedPieces.clear();
+
+    const cw = canvas.clientWidth, ch = canvas.clientHeight;
+    // gera um keyframe: zoom em torno de um ponto focal (fx,fy) em coords mundo
+    function kf(fx, fy, zoom) {
+      const s = zoom;
+      return { vx: cw / 2 - fx * s, vy: ch / 2 - fy * s, vs: s };
+    }
+
+    // escala atual no momento da conclusão
+    const baseScale = Math.min(cw / dispW, ch / dispH) * 0.92;
+    const cx = ox + dispW / 2, cy = oy + dispH / 2;
+
+    const zoom    = baseScale * 2.8;          // nível de zoom durante o passeio
+    const topKF   = kf(cx, oy + dispH * .15, zoom);   // topo central
+    const botKF   = kf(cx, oy + dispH * .85, zoom);   // base central
+    const fullKF  = kf(cx, cy, baseScale);             // visão geral final
+
+    const keyframes = [
+      { to: topKF,  dur: 1200  },   // entra no topo com zoom
+      { to: botKF,  dur: 11000 },  // desce até o fim (bem lento)
+      { to: fullKF, dur: 1500  },  // zoom out para visão geral
+    ];
+
+    // parte da visão atual
+    let idx = 0;
+
+    function next() {
+      if (idx >= keyframes.length) {
+        tourActive = false;
+        setTimeout(showVictory, 400);
+        return;
+      }
+      const from = { vx, vy, vs };
+      const { to, dur } = keyframes[idx];
+      const t0 = performance.now();
+
+      function step(now) {
+        const t = Math.min((now - t0) / dur, 1);
+        const e = easeInOut(t);
+        vx = from.vx + (to.vx - from.vx) * e;
+        vy = from.vy + (to.vy - from.vy) * e;
+        vs = from.vs + (to.vs - from.vs) * e;
+        drawTourFrame();
+        if (t < 1) requestAnimationFrame(step);
+        else { idx++; next(); }
+      }
+      requestAnimationFrame(step);
+    }
+
+    next();
+  }
+
   // ── SUPER DICA ───────────────────────────────────────────────────────────────
   let hintActive = false;
   let hintAnimId = null;
@@ -377,8 +453,8 @@
       activePtr = e.pointerId;
       canvas.setPointerCapture(e.pointerId);
 
-      // bloqueia interação durante a super dica
-      if (hintActive) return;
+      // bloqueia interação durante dica e passeio cinemático
+      if (hintActive || tourActive) return;
 
       // ── botão do meio: pan ──────────────────────────────────────────────────
       if (e.button === 1) {
@@ -503,7 +579,7 @@
       selectedPieces.forEach(p => trySnap(p));
       drawAll();
       if (pieces.every(p => p.isCorrect()))
-        setTimeout(() => { alert("Parabéns! Quebra-cabeça concluído!"); location.reload(); }, 10);
+        setTimeout(startCinematicTour, 300);
       activePtr = null;
       canvas.releasePointerCapture(e.pointerId);
       return;
@@ -513,7 +589,7 @@
       groups[draggingGroup].forEach(p => trySnap(p));
       drawAll();
       if (pieces.every(p => p.isCorrect())) {
-        setTimeout(() => { alert("Parabéns! Quebra-cabeça concluído!"); location.reload(); }, 10);
+        setTimeout(startCinematicTour, 300);
       }
     }
     draggingGroup = null;

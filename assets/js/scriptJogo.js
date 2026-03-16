@@ -1,410 +1,391 @@
-// script.js (pinch-to-zoom + pan + params linha/coluna + aleatoria)
 (function () {
-  // ======= BASE =======
-  const canvas = document.getElementById("puzzleCanvas");
-  const ctx = canvas.getContext("2d");
+
+  // ── CANVAS ──────────────────────────────────────────────────────────────────
+  const canvas    = document.getElementById("puzzleCanvas");
+  const ctx       = canvas.getContext("2d");
   const container = document.getElementById("game-container");
 
-  // Alta nitidez em telas high-DPI
-  function fitCanvasToWindow() {
+  function fitCanvas() {
     const dpr = window.devicePixelRatio || 1;
-    const cssW = window.innerWidth;
-    const cssH = window.innerHeight;
-    canvas.style.width = cssW + "px";
-    canvas.style.height = cssH + "px";
-    canvas.width = Math.floor(cssW * dpr);
-    canvas.height = Math.floor(cssH * dpr);
+    canvas.style.width  = window.innerWidth  + "px";
+    canvas.style.height = window.innerHeight + "px";
+    canvas.width  = Math.floor(window.innerWidth  * dpr);
+    canvas.height = Math.floor(window.innerHeight * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  // ======= GRID (pega da URL) =======
-  const linCol = new URLSearchParams(window.location.search);
-  const rows = parseInt(linCol.get("linha")) || 3;
-  const cols = parseInt(linCol.get("coluna")) || 3;
-
-  // ======= VARS =======
-  let imageWidth = 0, imageHeight = 0;
-  let displayW = 0, displayH = 0;
-  let srcPieceW = 0, srcPieceH = 0;
-  let pieceWidth = 0, pieceHeight = 0;
-  let offsetXTarget = 0, offsetYTarget = 0;
-  let scale = 1;
-
-  const SNAP = 30;
-
-  // ======= VIEWPORT (zoom/pan da câmera) =======
-  let viewScale = 1;
-  let viewX = 0, viewY = 0;
-  function applyViewTransform() { ctx.save(); ctx.translate(viewX, viewY); ctx.scale(viewScale, viewScale); }
-  function restoreViewTransform() { ctx.restore(); }
-  function screenToWorld(x, y) { return { x: (x - viewX) / viewScale, y: (y - viewY) / viewScale }; }
-  function worldToScreen(x, y) { return { x: x * viewScale + viewX, y: y * viewScale + viewY }; }
-
-  // ======= FULLSCREEN + RESIZE =======
-  function resizeCanvas() {
-    fitCanvasToWindow();
-    if (imageWidth && imageHeight) {
-      computeLayout(true);
-      pieces.forEach(p => { p.width = pieceWidth; p.height = pieceHeight; });
-      drawAll();
-    }
-  }
-  window.addEventListener("resize", resizeCanvas);
-  window.addEventListener("orientationchange", resizeCanvas);
-  resizeCanvas();
-
-  // ======= PARAMS DA PÁGINA =======
+  // ── PARAMS ──────────────────────────────────────────────────────────────────
   const params    = new URLSearchParams(window.location.search);
+  const ROWS      = parseInt(params.get("linha"))    || 3;
+  const COLS      = parseInt(params.get("coluna"))   || 3;
   const nome      = params.get("nome");
   const fase      = params.get("fase");
-  const numFotos  = params.get("numFotos");
-  const aleatoria = params.get("aleatoria"); // "0" => sorteio, >=1 => força número
-  const dataImg   = container ? container.getAttribute("data-img") : null;
+  const numFotos  = parseInt(params.get("numFotos")) || 1;
+  const aleatoria = params.get("aleatoria");
 
-  const MIN_NUM = 1;
-  const MAX_NUM = parseInt(numFotos, 10) || 1;
+  // ── LAYOUT ──────────────────────────────────────────────────────────────────
+  let imgW = 0, imgH = 0;   // tamanho original da imagem
+  let dispW = 0, dispH = 0; // tamanho exibido no canvas
+  let pW = 0, pH = 0;       // tamanho de cada peça
+  let ox = 0, oy = 0;       // origem do puzzle no canvas
+  const SNAP = 28;
 
-  // decide o número da imagem; sem limite superior quando for forçado
-  function pickImageNumber() {
-    if (aleatoria === "0") {
-      return Math.floor(Math.random() * MAX_NUM) + MIN_NUM; // sorteio 1..MAX_NUM
+  function computeLayout(keepPos) {
+    const margin  = 20;
+    const scale   = Math.min(
+      (canvas.clientWidth  - margin * 2) / imgW,
+      (canvas.clientHeight - margin * 2) / imgH
+    );
+    const prevPW = pW || 1, prevPH = pH || 1;
+    const prevOx = ox,      prevOy = oy;
+
+    dispW = Math.floor(imgW * scale);
+    dispH = Math.floor(imgH * scale);
+    pW    = dispW / COLS;
+    pH    = dispH / ROWS;
+    ox    = Math.floor((canvas.clientWidth  - dispW) / 2);
+    oy    = Math.floor((canvas.clientHeight - dispH) / 2);
+
+    if (keepPos && pieces.length) {
+      pieces.forEach(p => {
+        p.x = ox + (p.x - prevOx) / prevPW * pW;
+        p.y = oy + (p.y - prevOy) / prevPH * pH;
+      });
     }
-    const forced = parseInt(aleatoria, 10);
-    if (!isNaN(forced) && forced >= MIN_NUM) {
-      return forced; // usa o que vier (sem clamp)
-    }
-    return Math.floor(Math.random() * MAX_NUM) + MIN_NUM; // padrão: sorteio
   }
 
-  function buildImageSrc() {
-    if (nome && fase) {
-      const chosen = pickImageNumber();
-      const base = `./assets/pixel_ai/${encodeURIComponent(nome)}/${encodeURIComponent(fase)}`;
-      return `${base}/${chosen}.png`;
-    }
-    if (dataImg) {
-      if (dataImg.includes("/")) return dataImg;
-      return `./assets/pixel_ai/${dataImg}`;
-    }
-    return `./assets/pixel_ai/default/1.png`;
+  // ── CONECTORES JIGSAW ───────────────────────────────────────────────────────
+  // hConn[r][c] = conector da borda DIREITA de (r,c) / borda ESQUERDA de (r,c+1)
+  // vConn[r][c] = conector da borda INFERIOR de (r,c) / borda SUPERIOR de (r+1,c)
+  // +1 = aba saindo, -1 = entalhe entrando (perspectiva da borda direita/inferior)
+  let hConn = [], vConn = [];
+
+  function initConnectors() {
+    hConn = Array.from({ length: ROWS }, () =>
+      Array.from({ length: COLS - 1 }, () => (Math.random() < .5 ? 1 : -1)));
+    vConn = Array.from({ length: ROWS - 1 }, () =>
+      Array.from({ length: COLS }, () => (Math.random() < .5 ? 1 : -1)));
   }
 
-  let imageSrc = buildImageSrc();
-  const image = new Image();
-  image.src = imageSrc;
+  // ── PATH JIGSAW ─────────────────────────────────────────────────────────────
+  // Desenha uma aresta com aba (+1), entalhe (-1) ou reta (0).
+  // As seções retas usam lineTo — isso garante que a aba de uma peça
+  // e o entalhe da peça vizinha tenham exatamente a mesma curva (só direção invertida).
+  function jigsawEdge(x1, y1, x2, y2, c) {
+    if (c === 0) { ctx.lineTo(x2, y2); return; }
+    const dx = x2 - x1, dy = y2 - y1;
+    const len = Math.hypot(dx, dy);
+    const ux = dx / len, uy = dy / len;
+    const nx = uy, ny = -ux;              // normal apontando para fora da peça
+    const h  = len * 0.28 * c;           // +h = aba, -h = entalhe
+    const ax = x1 + dx * .35, ay = y1 + dy * .35;   // início da aba/entalhe
+    const bx = x1 + dx * .65, by = y1 + dy * .65;   // fim da aba/entalhe
+    const mx = x1 + dx * .5 + nx * h,   // ponto mais extremo da aba/entalhe
+          my = y1 + dy * .5 + ny * h;
 
-  // ======= PEÇAS & GRUPOS =======
-  let pieces = [];
-  let groups = [];
-  let draggingGroup = null;
-  let groupOffsetX = 0, groupOffsetY = 0;
+    ctx.lineTo(ax, ay);   // seção reta até o início da aba/entalhe
+    // ombro de entrada
+    ctx.bezierCurveTo(
+      ax + nx * h * 0.6,  ay + ny * h * 0.6,
+      mx - ux * len * .12, my - uy * len * .12,
+      mx, my
+    );
+    // ombro de saída (simétrico ao de entrada — garante encaixe perfeito)
+    ctx.bezierCurveTo(
+      mx + ux * len * .12, my + uy * len * .12,
+      bx + nx * h * 0.6,  by + ny * h * 0.6,
+      bx, by
+    );
+    ctx.lineTo(x2, y2);   // seção reta após a aba/entalhe
+  }
+
+  function buildPath(x, y, w, h, tc, rc, bc, lc) {
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    jigsawEdge(x,   y,   x+w, y,   tc);
+    jigsawEdge(x+w, y,   x+w, y+h, rc);
+    jigsawEdge(x+w, y+h, x,   y+h, bc);
+    jigsawEdge(x,   y+h, x,   y,   lc);
+    ctx.closePath();
+  }
+
+  // ── PEÇA ────────────────────────────────────────────────────────────────────
+  let pieces = [], groups = [];
+  let draggingGroup = null, grpOffX = 0, grpOffY = 0;
 
   class Piece {
-    constructor(row, col, startX, startY) {
-      this.row = row;
-      this.col = col;
-      this.srcX = col * srcPieceW;
-      this.srcY = row * srcPieceH;
-      this.canvasX = startX;
-      this.canvasY = startY;
-      this.width   = pieceWidth;
-      this.height  = pieceHeight;
+    constructor(row, col) {
+      this.row = row; this.col = col;
+      this.x = 0; this.y = 0;
       this.locked = false;
       this.groupId = null;
     }
+    // conectores de cada borda
+    get tc() { return this.row > 0      ? -vConn[this.row-1][this.col] : 0; }
+    get rc() { return this.col < COLS-1 ?  hConn[this.row][this.col]   : 0; }
+    get bc() { return this.row < ROWS-1 ?  vConn[this.row][this.col]   : 0; }
+    get lc() { return this.col > 0      ? -hConn[this.row][this.col-1] : 0; }
+    // posição correta no puzzle montado
+    get tx() { return ox + this.col * pW; }
+    get ty() { return oy + this.row * pH; }
+
     draw() {
-      ctx.drawImage(image, this.srcX, this.srcY, srcPieceW, srcPieceH, this.canvasX, this.canvasY, this.width, this.height);
+      const { x, y, tc, rc, bc, lc } = this;
+      // deslocamento em relação à posição correta
+      const ddx = x - this.tx, ddy = y - this.ty;
+
+      ctx.save();
+      buildPath(x, y, pW, pH, tc, rc, bc, lc);
+      ctx.clip();
+      // desenha a imagem completa deslocada — o clip revela só o trecho desta peça
+      ctx.drawImage(image, ox + ddx, oy + ddy, dispW, dispH);
+      ctx.restore();
+
+      // contorno da peça (borda jigsaw visível)
+      buildPath(x, y, pW, pH, tc, rc, bc, lc);
+      ctx.strokeStyle = "rgba(0,0,0,0.45)";
+      ctx.lineWidth   = 1.2;
+      ctx.stroke();
     }
-    isClicked(x, y) {
-      return !this.locked && x > this.canvasX && x < this.canvasX + this.width && y > this.canvasY && y < this.canvasY + this.height;
+
+    hitTest(wx, wy) {
+      if (this.locked) return false;
+      buildPath(this.x, this.y, pW, pH, this.tc, this.rc, this.bc, this.lc);
+      return ctx.isPointInPath(wx, wy);
     }
-    isInCorrectPosition() {
-      const expectedX = offsetXTarget + this.col * pieceWidth;
-      const expectedY = offsetYTarget + this.row * pieceHeight;
-      return Math.abs(this.canvasX - expectedX) < SNAP && Math.abs(this.canvasY - expectedY) < SNAP;
+
+    isCorrect() {
+      return Math.abs(this.x - this.tx) < SNAP && Math.abs(this.y - this.ty) < SNAP;
     }
-    lockPosition() {
-      this.canvasX = offsetXTarget + this.col * pieceWidth;
-      this.canvasY = offsetYTarget + this.row * pieceHeight;
-      this.locked = true;
+
+    snapToGrid() {
+      this.x = this.tx; this.y = this.ty; this.locked = true;
     }
   }
 
-  function createGroup(piece) {
-    const groupId = groups.length;
-    piece.groupId = groupId;
-    groups.push([piece]);
+  // ── GRUPOS ──────────────────────────────────────────────────────────────────
+  function createGroup(p) { p.groupId = groups.length; groups.push([p]); }
+
+  function mergeGroups(gA, gB, anchor, other) {
+    if (gA === gB) return;
+    const dx = other.x + (anchor.col - other.col) * pW - anchor.x;
+    const dy = other.y + (anchor.row - other.row) * pH - anchor.y;
+    groups[gA].forEach(p => { p.x += dx; p.y += dy; p.groupId = gB; });
+    groups[gB] = groups[gB].concat(groups[gA]);
+    groups[gA] = [];
   }
 
-  function mergeGroups(groupA, groupB, anchorPiece, otherPiece) {
-    if (groupA === groupB) return;
-    const dx = (otherPiece.canvasX + (anchorPiece.col - otherPiece.col) * pieceWidth) - anchorPiece.canvasX;
-    const dy = (otherPiece.canvasY + (anchorPiece.row - otherPiece.row) * pieceHeight) - anchorPiece.canvasY;
-    groups[groupA].forEach(p => { p.canvasX += dx; p.canvasY += dy; p.groupId = groupB; });
-    groups[groupB] = groups[groupB].concat(groups[groupA]);
-    groups[groupA] = [];
-  }
-
-  function moveGroup(groupId, dx, dy) {
-    groups[groupId].forEach(p => { p.canvasX += dx; p.canvasY += dy; });
-  }
+  function moveGroup(gid, dx, dy) { groups[gid].forEach(p => { p.x += dx; p.y += dy; }); }
 
   function trySnap(piece) {
-    for (let other of pieces) {
+    for (const other of pieces) {
       if (piece === other || other.locked) continue;
-      const isNeighbor =
+      const neighbor =
         (piece.row === other.row && Math.abs(piece.col - other.col) === 1) ||
         (piece.col === other.col && Math.abs(piece.row - other.row) === 1);
-      if (!isNeighbor) continue;
-
-      const dx = (other.col - piece.col) * pieceWidth;
-      const dy = (other.row - piece.row) * pieceHeight;
-
-      if (Math.abs((piece.canvasX + dx) - other.canvasX) < SNAP &&
-          Math.abs((piece.canvasY + dy) - other.canvasY) < SNAP) {
+      if (!neighbor) continue;
+      const dx = (other.col - piece.col) * pW;
+      const dy = (other.row - piece.row) * pH;
+      if (Math.abs(piece.x + dx - other.x) < SNAP &&
+          Math.abs(piece.y + dy - other.y) < SNAP) {
         mergeGroups(piece.groupId, other.groupId, piece, other);
       }
     }
   }
 
-  // ======= DRAW =======
+  // ── RENDERIZAÇÃO ────────────────────────────────────────────────────────────
   function drawAll() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    applyViewTransform();
-    ctx.fillStyle = "rgba(0,0,0,0.08)";
-    ctx.fillRect(offsetXTarget, offsetYTarget, displayW, displayH);
+
+    // fundo escuro
+    ctx.fillStyle = "#111";
+    ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+
+    applyView();
+
+    // imagem fantasma: ajuda a ver onde encaixar e preenche visualmente
+    // as áreas de entalhe das peças ainda não montadas
+    ctx.globalAlpha = 0.13;
+    ctx.drawImage(image, ox, oy, dispW, dispH);
+    ctx.globalAlpha = 1;
+
     pieces.forEach(p => p.draw());
-    restoreViewTransform();
+
+    restoreView();
   }
 
-  function checkCompleted() { return pieces.every(p => p.isInCorrectPosition()); }
+  // ── VIEWPORT (zoom / pan) ───────────────────────────────────────────────────
+  let vx = 0, vy = 0, vs = 1;
+  function applyView()   { ctx.save(); ctx.translate(vx, vy); ctx.scale(vs, vs); }
+  function restoreView() { ctx.restore(); }
+  function toWorld(x, y) { return { x: (x - vx) / vs, y: (y - vy) / vs }; }
 
-  // ======= LAYOUT =======
-  function computeLayout(preservePositions = false) {
-    const margin = 20;
-    const maxW = canvas.clientWidth  - margin * 2;
-    const maxH = canvas.clientHeight - margin * 2;
-
-    const prevOffsetX = offsetXTarget;
-    const prevOffsetY = offsetYTarget;
-    const prevPieceW  = pieceWidth  || 1;
-    const prevPieceH  = pieceHeight || 1;
-
-    scale = Math.min(maxW / imageWidth, maxH / imageHeight);
-    displayW = Math.floor(imageWidth  * scale);
-    displayH = Math.floor(imageHeight * scale);
-
-    srcPieceW = imageWidth  / cols;
-    srcPieceH = imageHeight / rows;
-
-    pieceWidth  = displayW / cols;
-    pieceHeight = displayH / rows;
-
-    offsetXTarget = Math.floor((canvas.clientWidth  - displayW) / 2);
-    offsetYTarget = Math.floor((canvas.clientHeight - displayH) / 2);
-
-    if (preservePositions && pieces.length) {
-      pieces.forEach(p => {
-        const relX = (p.canvasX - prevOffsetX) / prevPieceW;
-        const relY = (p.canvasY - prevOffsetY) / prevPieceH;
-        p.canvasX = offsetXTarget + relX * pieceWidth;
-        p.canvasY = offsetYTarget + relY * pieceHeight;
-      });
+  // ── IMAGEM ──────────────────────────────────────────────────────────────────
+  function buildSrc() {
+    if (nome && fase) {
+      const n = aleatoria === "0"
+        ? Math.floor(Math.random() * numFotos) + 1
+        : (parseInt(aleatoria) || 1);
+      return `./assets/pixel_ai/${encodeURIComponent(nome)}/${encodeURIComponent(fase)}/${n}.png`;
     }
+    const di = container?.getAttribute("data-img");
+    return di
+      ? (di.includes("/") ? di : `./assets/pixel_ai/${di}`)
+      : `./assets/pixel_ai/default/1.png`;
   }
 
-  // ======= INICIALIZA =======
+  const image = new Image();
+  image.src = buildSrc();
+
   image.onload = function () {
-    imageWidth  = image.width;
-    imageHeight = image.height;
-
+    imgW = image.width;
+    imgH = image.height;
     computeLayout(false);
+    initConnectors();
 
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        const startX = Math.random() * (canvas.clientWidth  - pieceWidth);
-        const startY = Math.random() * (canvas.clientHeight - pieceHeight);
-        const piece = new Piece(r, c, startX, startY);
-        pieces.push(piece);
-        createGroup(piece);
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const p = new Piece(r, c);
+        p.x = Math.random() * Math.max(0, canvas.clientWidth  - pW);
+        p.y = Math.random() * Math.max(0, canvas.clientHeight - pH);
+        pieces.push(p);
+        createGroup(p);
       }
     }
     drawAll();
   };
 
-  image.onerror = function () {
-    console.error("Falha ao carregar imagem:", imageSrc);
-    alert("Não foi possível carregar a imagem.");
-  };
+  image.onerror = () => alert("Não foi possível carregar a imagem.");
 
-  // ======= INPUT (Pointer Events) =======
-  let activePointerId = null;
+  // ── RESIZE ──────────────────────────────────────────────────────────────────
+  function onResize() {
+    fitCanvas();
+    if (imgW) { computeLayout(true); drawAll(); }
+  }
+  window.addEventListener("resize",            onResize);
+  window.addEventListener("orientationchange", onResize);
+  fitCanvas();
+
+  // ── EVENTOS DE ENTRADA ──────────────────────────────────────────────────────
   const pointers = new Map();
-  let pinch = null;
+  let activePtr = null, pinch = null;
 
   function getPos(e) {
-    const rect = canvas.getBoundingClientRect();
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    const r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
   }
 
-  function angleBetween(p0, p1) { return Math.atan2(p1.y - p0.y, p1.x - p0.x); }
-
-  function updatePinchState() {
+  function updatePinch() {
     if (pointers.size < 2) { pinch = null; return; }
-    const pts = Array.from(pointers.values());
-    const p0 = pts[0], p1 = pts[1];
-
-    const mid = { x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2 };
-    const dx = p1.x - p0.x, dy = p1.y - p0.y;
-    const dist = Math.hypot(dx, dy);
+    const [p0, p1] = [...pointers.values()];
+    const mid  = { x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2 };
+    const dist = Math.hypot(p1.x - p0.x, p1.y - p0.y);
 
     if (!pinch) {
-      pinch = {
-        startDist: dist || 1,
-        startScale: viewScale,
-        startMid: mid,
-        worldCenter: screenToWorld(mid.x, mid.y),
-        startAngle: angleBetween(p0, p1)
-      };
+      pinch = { startDist: dist || 1, startScale: vs, startMid: mid,
+                worldCenter: toWorld(mid.x, mid.y),
+                startAngle: Math.atan2(p1.y - p0.y, p1.x - p0.x) };
     } else {
-      const dMidX = mid.x - pinch.startMid.x;
-      const dMidY = mid.y - pinch.startMid.y;
+      const newScale = Math.max(.2, Math.min(5, pinch.startScale * dist / pinch.startDist));
 
-      const newScale = Math.max(0.2, Math.min(5, pinch.startScale * (dist / pinch.startDist || 1)));
-
-      const currentAngle = angleBetween(p0, p1);
-      let deltaAngle = currentAngle - pinch.startAngle;
-      while (deltaAngle < -Math.PI) deltaAngle += 2 * Math.PI;
-      while (deltaAngle >  Math.PI) deltaAngle -= 2 * Math.PI;
-
-      // Rotação de grupo ativo
+      // rotação do grupo arrastado via pinch
       if (draggingGroup !== null) {
-        const group = groups[draggingGroup];
-        const centerX = group.reduce((s, p) => s + p.canvasX + p.width / 2, 0) / group.length;
-        const centerY = group.reduce((s, p) => s + p.canvasY + p.height / 2, 0) / group.length;
-
-        const sin = Math.sin(deltaAngle);
-        const cos = Math.cos(deltaAngle);
-
-        group.forEach(p => {
-          const x = p.canvasX + p.width / 2 - centerX;
-          const y = p.canvasY + p.height / 2 - centerY;
-          const rx = x * cos - y * sin;
-          const ry = x * sin + y * cos;
-          p.canvasX = centerX + rx - p.width / 2;
-          p.canvasY = centerY + ry - p.height / 2;
+        const grp = groups[draggingGroup];
+        const cx  = grp.reduce((s, p) => s + p.x + pW / 2, 0) / grp.length;
+        const cy  = grp.reduce((s, p) => s + p.y + pH / 2, 0) / grp.length;
+        const da  = Math.atan2(p1.y - p0.y, p1.x - p0.x) - pinch.startAngle;
+        const sin = Math.sin(da), cos = Math.cos(da);
+        grp.forEach(p => {
+          const rx = p.x + pW / 2 - cx, ry = p.y + pH / 2 - cy;
+          p.x = cx + rx * cos - ry * sin - pW / 2;
+          p.y = cy + rx * sin + ry * cos - pH / 2;
         });
-
-        pinch.startAngle = currentAngle;
-        drawAll();
+        pinch.startAngle = Math.atan2(p1.y - p0.y, p1.x - p0.x);
       }
 
-      // Zoom focado no centro do gesto
-      viewScale = newScale;
-      const targetView = {
-        x: mid.x - pinch.worldCenter.x * viewScale,
-        y: mid.y - pinch.worldCenter.y * viewScale
-      };
-      viewX = targetView.x;
-      viewY = targetView.y;
-
+      vs = newScale;
+      vx = mid.x - pinch.worldCenter.x * vs;
+      vy = mid.y - pinch.worldCenter.y * vs;
       drawAll();
     }
   }
 
-  canvas.addEventListener("pointerdown", (e) => {
+  canvas.addEventListener("pointerdown", e => {
     e.preventDefault();
     const pos = getPos(e);
     pointers.set(e.pointerId, pos);
 
     if (pointers.size === 1) {
-      activePointerId = e.pointerId;
+      activePtr = e.pointerId;
       canvas.setPointerCapture(e.pointerId);
+      const w = toWorld(pos.x, pos.y);
 
-      const world = screenToWorld(pos.x, pos.y);
       for (let i = pieces.length - 1; i >= 0; i--) {
-        if (pieces[i].isClicked(world.x, world.y)) {
-          draggingGroup = pieces[i].groupId;
-
-          const groupPieces = groups[draggingGroup];
-          const minX = Math.min(...groupPieces.map(p => p.canvasX));
-          const minY = Math.min(...groupPieces.map(p => p.canvasY));
-
-          groupOffsetX = world.x - minX;
-          groupOffsetY = world.y - minY;
-
-          // traz grupo para frente
-          groupPieces.forEach(p => {
-            const idx = pieces.indexOf(p);
-            if (idx !== -1) { pieces.splice(idx, 1); pieces.push(p); }
-          });
-          drawAll();
-          break;
-        }
+        if (!pieces[i].hitTest(w.x, w.y)) continue;
+        draggingGroup = pieces[i].groupId;
+        const grp = groups[draggingGroup];
+        grpOffX = w.x - Math.min(...grp.map(p => p.x));
+        grpOffY = w.y - Math.min(...grp.map(p => p.y));
+        // traz grupo para frente
+        grp.forEach(p => { pieces.splice(pieces.indexOf(p), 1); pieces.push(p); });
+        drawAll();
+        break;
       }
     } else if (pointers.size === 2) {
-      updatePinchState();
+      updatePinch();
       draggingGroup = null;
-      activePointerId = null;
+      activePtr = null;
     }
   }, { passive: false });
 
-  canvas.addEventListener("pointermove", (e) => {
+  canvas.addEventListener("pointermove", e => {
     e.preventDefault();
-    const pos = getPos(e);
-    if (pointers.has(e.pointerId)) pointers.set(e.pointerId, pos);
+    if (pointers.has(e.pointerId)) pointers.set(e.pointerId, getPos(e));
+    if (pointers.size >= 2) { updatePinch(); return; }
+    if (draggingGroup === null || activePtr !== e.pointerId) return;
 
-    if (pointers.size >= 2) { updatePinchState(); return; }
-    if (draggingGroup === null || activePointerId !== e.pointerId) return;
-
-    const world = screenToWorld(pos.x, pos.y);
-    const groupPieces = groups[draggingGroup];
-    const minX = Math.min(...groupPieces.map(p => p.canvasX));
-    const minY = Math.min(...groupPieces.map(p => p.canvasY));
-    const dx = world.x - groupOffsetX - minX;
-    const dy = world.y - groupOffsetY - minY;
-
-    moveGroup(draggingGroup, dx, dy);
+    const w   = toWorld(getPos(e).x, getPos(e).y);
+    const grp = groups[draggingGroup];
+    moveGroup(draggingGroup,
+      w.x - grpOffX - Math.min(...grp.map(p => p.x)),
+      w.y - grpOffY - Math.min(...grp.map(p => p.y)));
     drawAll();
   }, { passive: false });
 
   function endPointer(e) {
-    if (pointers.has(e.pointerId)) pointers.delete(e.pointerId);
+    pointers.delete(e.pointerId);
     if (pointers.size < 2) pinch = null;
+    if (activePtr !== e.pointerId) return;
 
-    if (activePointerId === e.pointerId) {
-      if (draggingGroup !== null) {
-        groups[draggingGroup].forEach(p => trySnap(p));
-        drawAll();
-        if (checkCompleted()) {
-          setTimeout(() => { alert("Parabéns! Quebra-cabeça concluído!"); location.reload(); }, 10);
-        }
+    if (draggingGroup !== null) {
+      groups[draggingGroup].forEach(p => trySnap(p));
+      drawAll();
+      if (pieces.every(p => p.isCorrect())) {
+        setTimeout(() => { alert("Parabéns! Quebra-cabeça concluído!"); location.reload(); }, 10);
       }
-      draggingGroup = null;
-      activePointerId = null;
-      canvas.releasePointerCapture(e.pointerId);
     }
+    draggingGroup = null;
+    activePtr = null;
+    canvas.releasePointerCapture(e.pointerId);
   }
-  canvas.addEventListener("pointerup", endPointer, { passive: false });
+  canvas.addEventListener("pointerup",     endPointer, { passive: false });
   canvas.addEventListener("pointercancel", endPointer, { passive: false });
 
-  // ======= ZOOM RODA DO MOUSE =======
-  canvas.addEventListener("wheel", (e) => {
+  canvas.addEventListener("wheel", e => {
     e.preventDefault();
     const pos = getPos(e);
-    const world = screenToWorld(pos.x, pos.y);
-    const factor = Math.exp((e.deltaY > 0 ? -1 : 1) * 0.1);
-    const newScale = Math.max(0.2, Math.min(5, viewScale * factor));
-    viewX = pos.x - world.x * newScale;
-    viewY = pos.y - world.y * newScale;
-    viewScale = newScale;
+    const w   = toWorld(pos.x, pos.y);
+    const ns  = Math.max(.2, Math.min(5, vs * Math.exp((e.deltaY > 0 ? -1 : 1) * .1)));
+    vx = pos.x - w.x * ns;
+    vy = pos.y - w.y * ns;
+    vs = ns;
     drawAll();
   }, { passive: false });
+
 })();
 
-// Botões (opcionais)
-const backBtn = document.getElementById("btn-back");
-if (backBtn) backBtn.addEventListener("click", () => history.back());
-
+// ── BOTÕES ──────────────────────────────────────────────────────────────────
+const backBtn    = document.getElementById("btn-back");
 const refreshBtn = document.getElementById("btn-refresh");
+if (backBtn)    backBtn.addEventListener("click",    () => history.back());
 if (refreshBtn) refreshBtn.addEventListener("click", () => location.reload());

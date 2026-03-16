@@ -197,6 +197,45 @@
     }
   }
 
+  // ── SUPER DICA ───────────────────────────────────────────────────────────────
+  let hintActive = false;
+  let hintAnimId = null;
+  let hintOriginal = null;
+
+  function easeInOut(t) { return t < .5 ? 2*t*t : -1 + (4 - 2*t)*t; }
+
+  function animateTo(targets, duration, onDone) {
+    cancelAnimationFrame(hintAnimId);
+    const starts = pieces.map(p => ({ x: p.x, y: p.y }));
+    const t0 = performance.now();
+    function step(now) {
+      const t = Math.min((now - t0) / duration, 1);
+      const e = easeInOut(t);
+      pieces.forEach((p, i) => {
+        p.x = starts[i].x + (targets[i].x - starts[i].x) * e;
+        p.y = starts[i].y + (targets[i].y - starts[i].y) * e;
+      });
+      drawAll();
+      if (t < 1) { hintAnimId = requestAnimationFrame(step); }
+      else        { onDone && onDone(); }
+    }
+    hintAnimId = requestAnimationFrame(step);
+  }
+
+  function toggleHint() {
+    selectedPieces.clear();
+    if (!hintActive) {
+      // 1º clique: guarda posições e anima para solução
+      hintOriginal = pieces.map(p => ({ x: p.x, y: p.y }));
+      hintActive   = true;
+      animateTo(pieces.map(p => ({ x: p.tx, y: p.ty })), 700);
+    } else {
+      // 2º clique: volta para posições originais
+      hintActive = false;
+      animateTo(hintOriginal, 700, () => { hintOriginal = null; });
+    }
+  }
+
   // ── RENDERIZAÇÃO ────────────────────────────────────────────────────────────
   function drawAll() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -327,7 +366,7 @@
     }
   }
 
-  canvas.addEventListener("contextmenu", e => e.preventDefault());
+  canvas.addEventListener("contextmenu", e => { e.preventDefault(); toggleHint(); });
 
   canvas.addEventListener("pointerdown", e => {
     e.preventDefault();
@@ -337,6 +376,9 @@
     if (pointers.size === 1) {
       activePtr = e.pointerId;
       canvas.setPointerCapture(e.pointerId);
+
+      // bloqueia interação durante a super dica
+      if (hintActive) return;
 
       // ── botão do meio: pan ──────────────────────────────────────────────────
       if (e.button === 1) {
